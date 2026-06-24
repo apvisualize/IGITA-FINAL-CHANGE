@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IGITA 2026">
+  <meta name="format-detection" content="telephone=no">
+  <title>IGITA 2026 | IBIKKG Innovation and Technology Award</title>
+  <meta name="description" content="IGITA 2026: Kompetisi pengembangan proyek digital berbasis Smart Agriculture. Terbuka untuk Mahasiswa KKG & Siswa SMA/SMK. Daftarkan timmu sekarang!">
+  <meta property="og:title" content="IGITA 2026 | Smart Agriculture Innovation">
+  <meta property="og:description" content="Kompetisi inovasi teknologi pertanian cerdas. 11 Agustus – 16 September 2026. Pendaftaran terbuka, tanpa batas kuota.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#06080f">
+  <link rel="icon" type="image/png" href="asset/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- SVG defs for loader -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#00aaff"/>
+        <stop offset="60%"  stop-color="#00d4ff"/>
+        <stop offset="100%" stop-color="#0044ff"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Loading Screen -->
+  <div class="loader-screen" id="loader-screen" aria-hidden="true">
+
+    <!-- Grid bg -->
+    <div class="loader-grid"></div>
+
+    <!-- Ambient glows -->
+    <div class="loader-glow loader-glow--core"></div>
+    <div class="loader-glow loader-glow--outer"></div>
+    <div class="loader-glow loader-glow--side-l"></div>
+    <div class="loader-glow loader-glow--side-r"></div>
+
+    <!-- HUD corners -->
+    <div class="loader-corner loader-corner--tl"></div>
+    <div class="loader-corner loader-corner--tr"></div>
+    <div class="loader-corner loader-corner--bl"></div>
+    <div class="loader-corner loader-corner--br"></div>
+
+    <!-- Top HUD -->
+    <div class="loader-hud-top">
+      <span class="loader-hud-dot"></span>
+      <span class="loader-hud-label">IGITA 2026</span>
+      <span class="loader-hud-sep"></span>
+      <span class="loader-hud-label">SYSTEM BOOT</span>
+      <span class="loader-hud-dot"></span>
+    </div>
+
+    <div class="loader-content">
+
+      <!-- Ring assembly -->
+      <div class="loader-ring-wrap">
+        <!-- Deco spinning rings -->
+        <div class="loader-deco-ring loader-deco-ring--a"></div>
+        <div class="loader-deco-ring loader-deco-ring--b"></div>
+
+        <!-- SVG: 2*pi*66 = 414.69 -->
+        <svg class="loader-ring-svg" viewBox="0 0 160 160" fill="none">
+          <circle class="loader-ring-track"    cx="80" cy="80" r="66" stroke-width="1.5"/>
+          <circle class="loader-ring-ticks"    cx="80" cy="80" r="74" stroke-width="0.8"/>
+          <circle class="loader-ring-progress" id="loader-ring-progress"
+            cx="80" cy="80" r="66" stroke-width="3.5"
+            stroke-dasharray="414.69" stroke-dashoffset="414.69"
+            stroke-linecap="round"/>
+          <circle class="loader-ring-inner"    cx="80" cy="80" r="56" stroke-width="0.5"/>
+        </svg>
+
+        <!-- Center -->
+        <div class="loader-ring-center">
+          <img src="asset/logo.png" alt="IGITA 2026" class="loader-logo">
+          <div class="loader-pct" id="loader-pct">0<span>%</span></div>
+        </div>
+
+        <!-- Orbiting dots -->
+        <div class="loader-orbit loader-orbit--a">
+          <div class="loader-orbit-dot"></div>
+        </div>
+        <div class="loader-orbit loader-orbit--b">
+          <div class="loader-orbit-dot loader-orbit-dot--sm"></div>
+        </div>
+      </div>
+
+      <!-- Brand text gradient -->
+      <div class="loader-brand">
+        <span class="loader-brand-igita">IGITA</span>
+        <span class="loader-brand-year">2026</span>
+      </div>
+      <div class="loader-subtitle">IBIKKG Innovation &amp; Technology Award</div>
+
+      <!-- Status -->
+      <div class="loader-bottom">
+        <div class="loader-bar-track">
+          <div class="loader-bar-fill" id="loader-bar"></div>
+        </div>
+        <div class="loader-status-row">
+          <span class="loader-text" id="loader-text">Memuat...</span>
+          <span class="loader-pct-sm" id="loader-pct-sm">0%</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- SVG Filter: mengubah warna logo menjadi cyan tema web #00d4ff -->
+  <svg style="display:none" aria-hidden="true">
+    <defs>
+      <filter id="logo-cyan" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="
+          0 0 0 0 0.00
+          0 0 0 0 0.83
+          0 0 0 0 1.00
+          0 0 0 1 0
+        "/>
+      </filter>
+    </defs>
+  </svg>
+
+  <a href="#main-content" class="skip-link">Langsung ke konten</a>
+
+  <div class="global-bg" aria-hidden="true">
+    <div class="global-grid"></div>
+    <div class="global-glow glow-1"></div>
+    <div class="global-glow glow-2"></div>
+    <canvas id="particle-canvas"></canvas>
+  </div>
+
+  <div class="status-bar" aria-hidden="true">
+    <div class="status-scroll">
+      <span>IGITA 2026 &nbsp;·&nbsp; SMART AGRICULTURE &nbsp;·&nbsp; INTERNAL (KKG) &amp; EKSTERNAL (SMA/SMK) &nbsp;·&nbsp; 11 AGUSTUS – 16 SEPTEMBER 2026 &nbsp;·&nbsp; PENDAFTARAN TERBUKA &nbsp;·&nbsp;</span>
+      <span>IGITA 2026 &nbsp;·&nbsp; SMART AGRICULTURE &nbsp;·&nbsp; INTERNAL (KKG) &amp; EKSTERNAL (SMA/SMK) &nbsp;·&nbsp; 11 AGUSTUS – 16 SEPTEMBER 2026 &nbsp;·&nbsp; PENDAFTARAN TERBUKA &nbsp;·&nbsp;</span>
+    </div>
+  </div>
+
+  <nav id="navbar" aria-label="Navigasi Utama">
+    <div class="nav-logo">
+      <img src="asset/logo.png" alt="" class="nav-logo-img">
+      <span class="nav-logo-text">IGITA<span class="nav-logo-year">2026</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="#concept">Konsep</a>
+      <a href="#categories">Kategori</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#rules">Ketentuan</a>
+      <a href="#contact">Kontak</a>
+    </div>
+    <a href="daftar.html" class="nav-cta"><span>Daftar Tim</span></a>
+    <button class="nav-burger" id="nav-burger" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="mobile-nav" type="button">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" aria-hidden="true"></div>
+
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Navigasi Mobile" aria-hidden="true">
+    <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Tutup menu">✕</button>
+    <div class="mobile-nav-header" aria-hidden="true">
+      <span class="mobile-nav-label">// NAVIGASI</span>
+    </div>
+    <a href="#concept"><span class="nav-num">01</span>Konsep</a>
+    <a href="#categories"><span class="nav-num">02</span>Kategori</a>
+    <a href="#timeline"><span class="nav-num">03</span>Timeline</a>
+    <a href="#rules"><span class="nav-num">04</span>Ketentuan</a>
+    <a href="#downloads"><span class="nav-num">05</span>Unduhan</a>
+    <a href="#contact"><span class="nav-num">06</span>Kontak</a>
+    <div class="mobile-nav-divider" aria-hidden="true"></div>
+    <a href="daftar.html" class="mobile-cta"><span>Daftar Tim</span></a>
+  </nav>
+
+  <main id="main-content">
+    <section class="hero">
+      <div class="hero-bg-asset" aria-hidden="true">
+        <img src="asset/smart-agro.png" alt="" class="bg-agro-img">
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">IBIKKG Innovation and Technology Award</div>
+        <h1 class="hero-title">
+          <span class="line1">SMART</span>
+          <span class="line2">AGRICULTURE</span>
+          <span class="line3">INNOVATION</span>
+        </h1>
+        <p class="hero-sub">Kembangkan proyek atau produk digital yang menjawab tantangan pertanian modern. Kompetisi satu bulan penuh inovasi, presentasi, dan pameran karya.</p>
+        <div class="hero-tags">
+          <div class="hero-tag">// Smart Agriculture</div>
+          <div class="hero-tag">// Smart Farming</div>
+          <div class="hero-tag">// Internal &amp; Eksternal</div>
+          <div class="hero-tag">// Impact Driven</div>
+        </div>
+        <div class="hero-actions">
+          <a href="daftar.html" class="btn-primary">Daftar Tim</a>
+          <a href="#timeline" class="btn-secondary">Lihat Jadwal ↓</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="countdown-section">
+      <div class="countdown-label">Pembukaan &amp; Technical Meeting dalam</div>
+      <div class="countdown-wrap">
+        <div class="count-block"><div class="count-num" id="cd-days">--</div><div class="count-label">Hari</div></div>
+        <div class="count-sep">:</div>
+        <div class="count-block"><div class="count-num" id="cd-hours">--</div><div class="count-label">Jam</div></div>
+        <div class="count-sep">:</div>
+        <div class="count-block"><div class="count-num" id="cd-mins">--</div><div class="count-label">Menit</div></div>
+        <div class="count-sep">:</div>
+        <div class="count-block"><div class="count-num" id="cd-secs">--</div><div class="count-label">Detik</div></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <section id="concept">
+      <div class="section-label">Tentang Acara</div>
+      <h2 class="section-title">Inovasi <em>IGITA 2026</em></h2>
+      <div class="concept-grid reveal">
+        <div class="concept-card">
+          <div class="icon-box">
+            <svg class="icon-modern" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/><path d="M12 12V2"/><path d="M8 8c2 2 4 3 4 4"/><path d="M16 8c-2 2-4 3-4 4"/><circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+            </svg>
+          </div>
+          <div class="card-title">Studi Kasus Nyata</div>
+          <div class="card-desc">Fokus pada pengembangan solusi digital untuk sektor pertanian cerdas. Karya harus relevan, terukur, dan siap diimplementasikan.</div>
+        </div>
+        <div class="concept-card">
+          <div class="icon-box">
+            <svg class="icon-modern" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><circle cx="12" cy="16" r="3"/><path d="M12 13v3"/>
+            </svg>
+          </div>
+          <div class="card-title">Durasi 1 Bulan</div>
+          <div class="card-desc">Dimulai dari Technical Meeting online, masa pengerjaan proyek, hingga rangkaian presentasi, pameran, dan awarding offline.</div>
+        </div>
+        <div class="concept-card">
+          <div class="icon-box">
+            <svg class="icon-modern" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <div class="card-title">Scaleable Impact</div>
+          <div class="card-desc">Fokus pada inovasi agrikultur cerdas yang dapat diskalakan. Menjawab tantangan pangan masa depan melalui teknologi.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section id="categories">
+      <div class="section-label">Kategori Peserta</div>
+      <h2 class="section-title">Pilih <em>Jalur</em> Kompetisi</h2>
+      <div class="cat-grid reveal">
+        <a href="daftar.html?kategori=external" style="text-decoration: none; color: inherit;">
+          <div class="cat-card external">
+            <div class="cat-badge">EKSTERNAL</div>
+            <div class="cat-title">SMA / SMK Sederajat</div>
+            <div class="cat-desc">Terbuka untuk pelajar tingkat menengah. Presentasi pada Day 2 (15 September) dengan standar penilaian setara.</div>
+            <div class="cat-quota">Peserta akan diseleksi</div>
+          </div>
+        </a>
+
+        <a href="daftar.html?kategori=internal" style="text-decoration: none; color: inherit;">
+          <div class="cat-card internal">
+            <div class="cat-badge">INTERNAL</div>
+            <div class="cat-title">Mahasiswa KKG</div>
+            <div class="cat-desc">Khusus mahasiswa aktif Kelompok Keahlian/Gerbang (KKG). Presentasi pada Day 1 (14 September).</div>
+            <div class="cat-quota">Peserta akan diseleksi</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="timeline-section" id="timeline">
+      <div class="section-label">Jadwal Kegiatan</div>
+      <h2 class="section-title">Timeline <em>Kompetisi</em></h2>
+      <div class="timeline reveal">
+        <div class="tl-item" data-start="2026-08-11" data-end="2026-08-11">
+          <div class="tl-dot">11<br>AGU</div>
+          <div class="tl-content">
+            <div class="tl-date">11 Agustus 2026</div>
+            <div class="tl-title">Pembukaan &amp; Technical Meeting (Online)</div>
+            <div class="tl-status">Penjelasan materi, kategori &amp; jadwal presentasi</div>
+          </div>
+        </div>
+        <div class="tl-item" data-start="2026-08-12" data-end="2026-09-13">
+          <div class="tl-dot">12 AGU<br>–<br>13 SEP</div>
+          <div class="tl-content">
+            <div class="tl-date">12 Agustus – 13 September 2026</div>
+            <div class="tl-title">Masa Pengerjaan Proyek (Pre-Event)</div>
+            <div class="tl-status">Peserta mengembangkan produk/karya digital</div>
+          </div>
+        </div>
+        <div class="tl-item" data-start="2026-09-14" data-end="2026-09-14">
+          <div class="tl-dot">14<br>SEP</div>
+          <div class="tl-content">
+            <div class="tl-date">14 September 2026 (Day 1 – Lt. 4)</div>
+            <div class="tl-title">Seminar, Presentasi KKG &amp; Pameran</div>
+            <div class="tl-status">Kategori Internal + 1 Pembicara + Live Music Band Kampus + Hall D Pameran</div>
+          </div>
+        </div>
+        <div class="tl-item" data-start="2026-09-15" data-end="2026-09-15">
+          <div class="tl-dot">15<br>SEP</div>
+          <div class="tl-content">
+            <div class="tl-date">15 September 2026 (Day 2 – Lt. 4)</div>
+            <div class="tl-title">Seminar, Presentasi SMA/SMK &amp; Pameran</div>
+            <div class="tl-status">Kategori Eksternal + 1 Pembicara + Live Music Band Kampus + Hall D Pameran</div>
+          </div>
+        </div>
+        <div class="tl-item" data-start="2026-09-16" data-end="2026-09-16">
+          <div class="tl-dot">16<br>SEP</div>
+          <div class="tl-content">
+            <div class="tl-date">16 September 2026 (Day 3 – Lt. 2)</div>
+            <div class="tl-title">Awarding &amp; Closing Ceremony</div>
+            <div class="tl-status">Pengumuman Juara 1, 2, 3 &amp; Penyerahan Hadiah</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section id="rules">
+      <div class="section-label">Regulasi Tim</div>
+      <h2 class="section-title">Ketentuan <em>Peserta</em></h2>
+      <div class="rules-grid reveal">
+        <div class="rule-card">
+          <div class="rule-num">01</div>
+          <div class="rule-title">Komposisi Tetap</div>
+          <div class="rule-desc">Setiap tim wajib beranggotakan <strong> minimal 3 orang maksimal 4 orang</strong>.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">02</div>
+          <div class="rule-title">Peserta Diseleksi</div>
+          <div class="rule-desc">Peserta <strong>Diseleksi</strong> dari kategori Internal KKG maupun Eksternal SMA/SMK bebas mendaftar.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">03</div>
+          <div class="rule-title">Kehadiran Wajib</div>
+          <div class="rule-desc">Seluruh anggota tim wajib hadir lengkap saat presentasi. Ketidakhadiran tanpa prosedur = <strong>diskualifikasi</strong>.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">04</div>
+          <div class="rule-title">Orisinalitas Karya</div>
+          <div class="rule-desc">Proyek harus murni buatan tim sendiri dan <strong>belum pernah menjuarai</strong> kompetisi serupa. Pelanggaran berakibat <strong>diskualifikasi</strong>.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section id="sponsors" class="sponsors-section">
+      <div class="section-label">Partner</div>
+      <h2 class="section-title">Disponsori <em>Oleh</em></h2>
+      
+      <div class="sponsors-premium reveal">
+        <div class="sponsor-card premium">
+          <div class="premium-glow"></div>
+          <img src="asset/logo.png" alt="Sponsor Utama" class="sponsor-img">
+          <div class="sponsor-tier">SPONSOR UTAMA</div>
+        </div>
+      </div>
+
+      <div class="sponsors-regular reveal">
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+        <div class="sponsor-card">
+          <img src="asset/logo.png" alt="Sponsor" class="sponsor-img">
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <div class="divider"></div>
+
+    <section id="downloads" class="downloads-section">
+      <div class="section-label">Unduhan Resmi</div>
+      <h2 class="section-title">Dokumen <em>IGITA 2026</em></h2>
+      <div class="downloads-grid reveal">
+        <div class="download-card">
+          <div class="download-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div class="download-content">
+            <div class="download-badge">PDF</div>
+            <div class="download-title">Guide Book IGITA 2026</div>
+            <div class="download-desc">Panduan lengkap kompetisi, teknis penilaian, jadwal, dan ketentuan resmi peserta.</div>
+          </div>
+          <a href="asset/guidebook-igita-2026.pdf" download class="download-btn" aria-label="Download Guide Book IGITA 2026">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Unduh
+          </a>
+        </div>
+
+        <div class="download-card">
+          <div class="download-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 11v6"/><path d="M9 14l3 3 3-3"/></svg>
+          </div>
+          <div class="download-content">
+            <div class="download-badge">DOCX</div>
+            <div class="download-title">Template Proposal</div>
+            <div class="download-desc">Template resmi proposal IGITA 2026. Wajib digunakan oleh seluruh tim peserta kompetisi.</div>
+          </div>
+          <a href="asset/template-proposal-igita-2026.docx" download class="download-btn" aria-label="Download Template Proposal IGITA 2026">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Unduh
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="contact-section" id="contact">
+      <div class="section-label">Lokasi &amp; Kontak</div>
+      <h2 class="section-title">Tempat <em>Pelaksanaan</em></h2>
+      <div class="contact-card reveal">
+        <div>
+          <div class="contact-name">Hall D &amp; Area Kampus</div>
+          <div class="contact-role">Lt. 2 (Awarding) · Lt. 4 (Seminar &amp; Presentasi)</div>
+          <div class="contact-links">
+            <a href="https://wa.me/6281210693425" class="contact-link">
+              <span class="platform">WhatsApp</span>
+              <span>+62 812-1069-3425 (Adm Justine)</span>
+            </a>
+            <a href="https://instagram.com/ic.ibikkg" class="contact-link">
+              <span class="platform">Instagram</span>
+              <span>@ic.ibikkg</span>
+            </a>
+            <a href="mailto:ic@kwikkiangie.ac.id" class="contact-link">
+              <span class="platform">Email</span>
+              <span>ic@kwikkiangie.ac.id</span>
+            </a>
+          </div>
+        </div>
+        <div class="contact-cta">
+          <div class="cta-big">Siap <em>Berkarya?</em></div>
+          <div class="cta-sub">Pendaftaran terbuka tanpa batas kuota. Inovasi pertanian cerdas menanti eksekusimu.</div>
+          <a href="daftar.html" class="btn-primary cta-btn">Form Pendaftaran</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand">
+      <img src="asset/logo.png" alt="" class="footer-logo-img">
+      <span class="footer-logo-text">IGITA<span class="footer-logo-year">2026</span></span>
+    </div>
+    <div class="footer-links">
+      <a href="#concept">Konsep</a>
+      <a href="#categories">Kategori</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#rules">Ketentuan</a>
+      <a href="#">Guidebook PDF</a>
+    </div>
+    <div class="footer-copy">© 2026 IGITA · Informatics Community</div>
+  </footer>
+
+  
+
+  <script src="script.js"></script>
+</body>
+</html>

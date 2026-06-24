@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IGITA 2026">
+  <meta name="format-detection" content="telephone=no">
+  <title>Pendaftaran Tim | IGITA 2026</title>
+  <meta name="theme-color" content="#020810">
+  <link rel="icon" type="image/png" href="asset/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* ── Page-level background upgrade ── */
+    body.reg-page {
+      background: radial-gradient(ellipse 120% 80% at 10% 10%, rgba(0,80,160,0.12) 0%, transparent 55%),
+                  radial-gradient(ellipse 80% 60% at 90% 85%, rgba(0,40,120,0.10) 0%, transparent 50%),
+                  #02060e;
+    }
+
+    /* ── Animated circuit lines on background ── */
+    .daftar-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .daftar-bg-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,136,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,136,255,0.04) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 0%, transparent 90%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 0%, transparent 90%);
+    }
+    .daftar-orb {
+      position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none;
+    }
+    .daftar-orb-1 {
+      width: 600px; height: 600px; top: -200px; right: -100px;
+      background: radial-gradient(circle, rgba(0,136,255,0.12) 0%, transparent 65%);
+      animation: orbFloat1 22s ease-in-out infinite alternate;
+    }
+    .daftar-orb-2 {
+      width: 500px; height: 500px; bottom: -150px; left: -80px;
+      background: radial-gradient(circle, rgba(0,60,200,0.10) 0%, transparent 65%);
+      animation: orbFloat2 28s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat1 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(-40px,40px) scale(1.08); } }
+    @keyframes orbFloat2 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(40px,-30px) scale(1.06); } }
+
+    /* ── Progress bar at very top of modal — full gradient, dekoratif ── */
+    .reg-progress-track {
+      height: 3px; width: 100%;
+      background: linear-gradient(90deg, #00d4ff 0%, #0088ff 55%, #818cf8 100%);
+      overflow: hidden; position: relative;
+      box-shadow: 0 0 10px rgba(0,136,255,0.4);
+    }
+    .reg-progress-fill {
+      display: none;
+    }
+
+    /* ── Header circuit decoration ── */
+    .reg-header-circuit {
+      position: absolute; right: 0; top: 0; bottom: 0;
+      width: 120px; opacity: 0.08; pointer-events: none; overflow: hidden;
+    }
+
+    /* ── Step ring: spinning conic arc ── */
+    @keyframes arcSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @keyframes arcSpinReverse {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(-360deg); }
+    }
+    @keyframes stepPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 4px rgba(0,212,255,0.06),
+                    0 0 18px rgba(0,212,255,0.22),
+                    inset 0 0 10px rgba(0,136,255,0.08);
+      }
+      50% {
+        box-shadow: 0 0 0 7px rgba(0,212,255,0.04),
+                    0 0 36px rgba(0,212,255,0.42),
+                    inset 0 0 16px rgba(0,136,255,0.16);
+      }
+    }
+
+    /* Pulse glow on the active step circle */
+    .reg-step.active .step-num {
+      animation: stepPulse 2.4s ease-in-out infinite;
+    }
+
+    /* ── Outer arc: sharp cyan comet with glow ── */
+    .reg-step.active .step-num::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        rgba(0,212,255,0)      0%,
+        rgba(0,212,255,0)     50%,
+        rgba(0,160,255,0.18)  62%,
+        rgba(0,200,255,0.55)  73%,
+        rgba(0,220,255,0.9)   83%,
+        rgba(180,245,255,1)   89%,
+        rgba(0,212,255,0.38)  94%,
+        rgba(0,212,255,0)    100%
+      );
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 0.5px));
+      mask:         radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 0.5px));
+      animation: arcSpin 1.2s linear infinite;
+      z-index: -1;
+      filter: drop-shadow(0 0 5px rgba(0,212,255,0.85));
+    }
+
+    /* ── Inner arc: violet/indigo counter-spin ── */
+    .reg-step.active .step-num::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: none;
+      background: conic-gradient(
+        from 200deg,
+        rgba(129,140,248,0)    0%,
+        rgba(129,140,248,0)   55%,
+        rgba(99,102,241,0.15) 68%,
+        rgba(129,140,248,0.45) 78%,
+        rgba(168,175,255,0.82) 86%,
+        rgba(129,140,248,0.28) 92%,
+        rgba(129,140,248,0)  100%
+      );
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 0.5px));
+      mask:         radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 0.5px));
+      animation: arcSpinReverse 2s linear infinite;
+      z-index: -1;
+      filter: drop-shadow(0 0 3px rgba(129,140,248,0.6));
+    }
+
+    /* Override ::before for done/inactive steps (from style.css they have track ring) */
+    .reg-step:not(.active) .step-num::before {
+      animation: none;
+    }
+    .reg-step.done .step-num::after {
+      display: none;
+    }
+
+    /* ── Member card role color variants ── */
+    .member-card.ketua::before {
+      background: linear-gradient(180deg, rgba(0,212,255,0.8), rgba(0,136,255,0.4));
+    }
+    .member-card.wakil::before {
+      background: linear-gradient(180deg, rgba(0,136,255,0.7), rgba(0,80,200,0.3));
+    }
+    .member-card.anggota::before {
+      background: linear-gradient(180deg, rgba(0,80,180,0.5), rgba(0,40,120,0.2));
+    }
+
+    /* ── Section icon chip ── */
+    .sec-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px;
+      background: rgba(0,136,255,0.08);
+      border: 1px solid rgba(0,136,255,0.18);
+      border-radius: 6px;
+      flex-shrink: 0;
+      align-self: center;
+      position: relative;
+    }
+    .sec-icon svg { display: block; }
+
+    /* ── Kembali button upgrade ── */
+    .btn-back-fixed {
+      position: fixed; z-index: 9500;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(4,10,24,0.85); backdrop-filter: blur(12px);
+      border: 1px solid rgba(0,136,255,0.2); color: var(--muted);
+      padding: 9px 14px 9px 11px;
+      border-radius: 10px; font-size: 0.8rem; font-weight: 600;
+      font-family: 'Syne', sans-serif; text-decoration: none;
+      transition: all 0.25s; letter-spacing: 0.02em;
+    }
+    .btn-back-fixed:hover {
+      border-color: rgba(0,212,255,0.45); color: var(--text);
+      background: rgba(0,80,160,0.15);
+      box-shadow: 0 0 16px rgba(0,136,255,0.2);
+      transform: translateX(-2px);
+    }
+    .btn-back-fixed svg { color: var(--accent); }
+
+    /* ── Quota info accent line ── */
+    .quota-info-accent {
+      display: inline-block; width: 30px; height: 1px;
+      background: linear-gradient(90deg, rgba(0,212,255,0.8), transparent);
+      vertical-align: middle; margin: 0 6px;
+    }
+
+    /* ── File upload drag-over (handled in style.css) ── */
+
+    /* ── Agreement checked state ── */
+    .form-agreement:has(.custom-checkbox-input:checked) {
+      border-color: rgba(0,212,255,0.3);
+      background: rgba(0,136,255,0.05);
+      box-shadow: 0 0 20px rgba(0,136,255,0.08);
+    }
+  </style>
+</head>
+<body class="reg-page">
+
+  <!-- Background decorations -->
+  <div class="daftar-bg" aria-hidden="true">
+    <div class="daftar-bg-grid"></div>
+    <div class="daftar-orb daftar-orb-1"></div>
+    <div class="daftar-orb daftar-orb-2"></div>
+  </div>
+
+  <!-- Global bg for grain -->
+  <div class="global-bg" aria-hidden="true">
+    <div class="global-glow glow-1" style="opacity:0.3"></div>
+    <div class="global-glow glow-2" style="opacity:0.25"></div>
+  </div>
+
+  <!-- Back button -->
+  <a href="index.html" class="btn-back-fixed" aria-label="Kembali ke halaman utama">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    <span>Kembali</span>
+  </a>
+
+<!-- =============================================
+       REGISTRATION MODAL
+       ============================================= -->
+  <div class="reg-overlay" id="reg-overlay" role="dialog" aria-modal="true" aria-label="Form Pendaftaran IGITA 2026">
+    <div class="reg-modal" id="reg-modal">
+
+      <!-- Step progress bar -->
+      <div class="reg-progress-track" id="reg-progress-track" aria-hidden="true">
+        <div class="reg-progress-fill" id="reg-progress-fill"></div>
+      </div>
+
+      <!-- Header -->
+      <div class="reg-header">
+        <div class="reg-header-left">
+          <div class="reg-title">Daftar Tim <span>IGITA 2026</span></div>
+          <div class="reg-subtitle">// Pendaftaran Resmi · Peserta Akan Diseleksi</div>
+        </div>
+
+        <!-- Decorative circuit SVG (right side of header) -->
+        <svg class="reg-header-circuit" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;right:0;top:0;bottom:0;height:100%;width:120px;opacity:0.12;pointer-events:none;">
+          <line x1="90" y1="0" x2="90" y2="80" stroke="#00d4ff" stroke-width="1"/>
+          <line x1="110" y1="0" x2="110" y2="80" stroke="#00d4ff" stroke-width="0.5"/>
+          <line x1="70" y1="40" x2="120" y2="40" stroke="#00d4ff" stroke-width="1"/>
+          <circle cx="90" cy="40" r="4" stroke="#00d4ff" stroke-width="1"/>
+          <circle cx="110" cy="20" r="2.5" stroke="#00d4ff" stroke-width="1"/>
+          <line x1="110" y1="20" x2="120" y2="20" stroke="#00d4ff" stroke-width="0.5"/>
+          <line x1="70" y1="60" x2="90" y2="60" stroke="#0088ff" stroke-width="0.5"/>
+          <circle cx="70" cy="60" r="2" fill="#0088ff" opacity="0.5"/>
+        </svg>
+
+        <button class="reg-close" id="reg-close-btn" aria-label="Tutup form pendaftaran">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Step Indicator -->
+      <div class="reg-steps" id="reg-steps" aria-label="Langkah pendaftaran">
+        <div class="reg-step active" data-step="1">
+          <div class="step-num"><span class="step-num-txt">1</span></div>
+          <div class="step-label">Kategori &amp; Tim</div>
+        </div>
+        <div class="step-connector" id="conn-1-2"></div>
+        <div class="reg-step" data-step="2">
+          <div class="step-num"><span class="step-num-txt">2</span></div>
+          <div class="step-label">Data Anggota</div>
+        </div>
+        <div class="step-connector" id="conn-2-3"></div>
+        <div class="reg-step" data-step="3">
+          <div class="step-num"><span class="step-num-txt">3</span></div>
+          <div class="step-label">Proposal &amp; Kirim</div>
+        </div>
+      </div>
+
+      <!-- STEP 1 + STEP 2 + STEP 3 body -->
+      <div class="reg-body">
+
+        <!-- STEP 1: Kategori & Info Tim -->
+        <div class="reg-panel active" id="panel-1">
+          <div class="quota-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <div class="quota-info-text">Pendaftaran <strong>terbuka untuk semua tim</strong> · Segera daftarkan timmu karena seluruh peserta akan diseleksi!</div>
+          </div>
+
+          <div class="form-sec-label">Kategori Kompetisi</div>
+          <div class="form-section-title">
+            <span class="sec-num">01</span>
+            <span class="sec-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h7v7h-7z" opacity="0.5"/></svg>
+            </span>
+            Pilih Kategori <em>Kompetisi</em>
+          </div>
+
+          <div class="cat-select-grid">
+            <label class="cat-select-card" id="card-internal">
+              <input type="radio" name="kategori" value="internal" id="radio-internal">
+              <div class="cat-check"></div>
+              <div class="cat-card-badge">INTERNAL</div>
+              <div class="cat-card-title">Mahasiswa KKG</div>
+              <div class="cat-card-desc">Mahasiswa aktif Kelompok Keahlian/Gerbang. Presentasi 14 September.</div>
+            </label>
+            <label class="cat-select-card ext" id="card-external">
+              <input type="radio" name="kategori" value="external" id="radio-external">
+              <div class="cat-check"></div>
+              <div class="cat-card-badge">EKSTERNAL</div>
+              <div class="cat-card-title">SMA / SMK Sederajat</div>
+              <div class="cat-card-desc">Pelajar tingkat menengah. Presentasi 15 September.</div>
+            </label>
+          </div>
+          <div class="form-error" id="err-kategori">Silakan pilih kategori kompetisi.</div>
+
+          <div class="form-sec-label">Informasi Tim</div>
+          <div class="form-section-title">
+            <span class="sec-num">02</span>
+            <span class="sec-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            Informasi <em>Tim</em>
+          </div>
+
+          <div class="form-row single">
+            <div class="form-group">
+              <label class="form-label" for="nama-tim">Nama Tim <span class="req">*</span></label>
+              <input type="text" class="form-input" id="nama-tim" placeholder="contoh: AgriTech Innovators" autocomplete="off">
+              <div class="form-error" id="err-nama-tim">Nama tim wajib diisi.</div>
+            </div>
+          </div>
+
+          <div class="form-row single" id="row-asal-institusi">
+            <div class="form-group">
+              <label class="form-label" for="asal-institusi">Asal Sekolah / Institusi <span class="req">*</span></label>
+              <input type="text" class="form-input" id="asal-institusi" placeholder="Nama universitas / sekolah" autocomplete="off">
+              <div class="form-error" id="err-asal-institusi">Asal institusi wajib diisi.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Data Anggota -->
+        <div class="reg-panel" id="panel-2">
+          <div class="form-sec-label no-top">Data Anggota</div>
+          <div class="form-section-title">
+            <span class="sec-num">03</span>
+            <span class="sec-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            Data <em>Anggota Tim</em>
+          </div>
+
+          <!-- Ketua Tim -->
+          <div class="member-card ketua">
+            <div class="member-card-header">
+              <div class="member-badge">Ketua Tim</div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="m1-nama">Nama Lengkap <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m1-nama" placeholder="Nama sesuai identitas">
+                <div class="form-error" id="err-m1-nama">Nama lengkap wajib diisi.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="m1-email">Email Aktif <span class="req">*</span></label>
+                <input type="email" class="form-input" id="m1-email" placeholder="email@domain.com">
+                <div class="form-error" id="err-m1-email">Email valid wajib diisi.</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="m1-hp">No. HP / WA <span class="req">*</span></label>
+                <input type="tel" class="form-input" id="m1-hp" placeholder="08xxxxxxxxxx">
+                <div class="form-error" id="err-m1-hp">Nomor HP wajib diisi.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="m1-ig">User Instagram <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m1-ig" placeholder="@username (untuk Twibbon)">
+                <div class="form-error" id="err-m1-ig">User Instagram wajib diisi.</div>
+              </div>
+            </div>
+            <div class="form-row single jurusan-row" style="display:none">
+              <div class="form-group">
+                <label class="form-label" for="m1-jurusan">Jurusan / Program Studi <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m1-jurusan" placeholder="contoh: Teknik Informatika">
+                <div class="form-error" id="err-m1-jurusan">Jurusan wajib diisi untuk kategori internal.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wakil Tim -->
+          <div class="member-card wakil">
+            <div class="member-card-header">
+              <div class="member-badge">Wakil Tim</div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="m2-nama">Nama Lengkap <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m2-nama" placeholder="Nama sesuai identitas">
+                <div class="form-error" id="err-m2-nama">Nama lengkap wajib diisi.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="m2-email">Email Aktif <span class="req">*</span></label>
+                <input type="email" class="form-input" id="m2-email" placeholder="email@domain.com">
+                <div class="form-error" id="err-m2-email">Email valid wajib diisi.</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="m2-hp">No. HP / WA <span class="req">*</span></label>
+                <input type="tel" class="form-input" id="m2-hp" placeholder="08xxxxxxxxxx">
+                <div class="form-error" id="err-m2-hp">Nomor HP wajib diisi.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="m2-ig">User Instagram <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m2-ig" placeholder="@username (untuk Twibbon)">
+                <div class="form-error" id="err-m2-ig">User Instagram wajib diisi.</div>
+              </div>
+            </div>
+            <div class="form-row single jurusan-row" style="display:none">
+              <div class="form-group">
+                <label class="form-label" for="m2-jurusan">Jurusan / Program Studi <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m2-jurusan" placeholder="contoh: Teknik Informatika">
+                <div class="form-error" id="err-m2-jurusan">Jurusan wajib diisi untuk kategori internal.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anggota 3 -->
+          <div class="member-card anggota">
+            <div class="member-card-header">
+              <div class="member-badge">Anggota 3</div>
+            </div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label" for="m3-nama">Nama Lengkap <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m3-nama" placeholder="Nama sesuai identitas">
+                <div class="form-error" id="err-m3-nama">Nama lengkap wajib diisi.</div>
+              </div>
+            </div>
+            <div class="form-row single jurusan-row" style="display:none">
+              <div class="form-group">
+                <label class="form-label" for="m3-jurusan">Jurusan / Program Studi <span class="req">*</span></label>
+                <input type="text" class="form-input" id="m3-jurusan" placeholder="contoh: Teknik Informatika">
+                <div class="form-error" id="err-m3-jurusan">Jurusan wajib diisi untuk kategori internal.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anggota 4 -->
+          <div class="member-card anggota">
+            <div class="member-card-header">
+              <div class="member-badge">Anggota 4 <span style="font-size:0.7em;opacity:0.55;font-weight:400">(opsional)</span></div>
+            </div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label" for="m4-nama">Nama Lengkap</label>
+                <input type="text" class="form-input" id="m4-nama" placeholder="Nama sesuai identitas">
+                <div class="form-error" id="err-m4-nama">Nama lengkap wajib diisi.</div>
+              </div>
+            </div>
+            <div class="form-row single jurusan-row" style="display:none">
+              <div class="form-group">
+                <label class="form-label" for="m4-jurusan">Jurusan / Program Studi</label>
+                <input type="text" class="form-input" id="m4-jurusan" placeholder="contoh: Teknik Informatika">
+                <div class="form-error" id="err-m4-jurusan">Jurusan wajib diisi jika nama diisi.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Proposal -->
+        <div class="reg-panel" id="panel-3">
+          <div class="form-sec-label no-top">Berkas Proposal</div>
+          <div class="form-section-title">
+            <span class="sec-num">04</span>
+            <span class="sec-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </span>
+            Upload <em>Proposal</em>
+          </div>
+
+          <div class="quota-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <div class="quota-info-text">Upload proposal timmu dalam format <strong>PDF</strong>. Gunakan template proposal resmi IGITA 2026 yang bisa diunduh di halaman utama. Pastikan proposal sudah lengkap sebelum dikirim.</div>
+          </div>
+
+          <div class="form-row single">
+            <div class="form-group">
+              <label class="form-label" for="proposal-file">File Proposal (PDF) <span class="req">*</span></label>
+              <div class="file-upload-wrap" id="file-upload-zone">
+                <input type="file" id="proposal-file" accept="application/pdf" class="file-input-hidden">
+                <div class="file-upload-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <div class="file-upload-meta">
+                  <div class="file-upload-hint">Seret file ke sini atau pilih file PDF</div>
+                  <span class="file-upload-name" id="proposal-file-name">Belum ada file dipilih</span>
+                </div>
+                <label for="proposal-file" class="file-upload-btn">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Pilih File
+                </label>
+              </div>
+              <div class="form-helper">Format: PDF · Maks. 10MB · Gunakan template proposal resmi IGITA 2026.</div>
+              <div class="form-error" id="err-proposal-file">File proposal wajib diunggah.</div>
+            </div>
+          </div>
+
+          <!-- Link Instagram Twibbon -->
+          <div class="form-sec-label">Verifikasi Twibbon</div>
+          <div class="form-section-title">
+            <span class="sec-num">05</span>
+            <span class="sec-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="#00d4ff" stroke="none"/></svg>
+            </span>
+            Link <em>Instagram</em>
+          </div>
+
+          <div class="quota-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <div class="quota-info-text">Berikan <strong>link profil Instagram</strong> yang digunakan untuk posting Twibbon IGITA 2026. Panitia akan memverifikasi twibbon kamu melalui akun tersebut. Pastikan akun tidak dikunci <strong>(public)</strong> saat pendaftaran.</div>
+          </div>
+
+          <div class="form-row single">
+            <div class="form-group">
+              <label class="form-label" for="link-ig-post">Link Profil Instagram <span class="req">*</span></label>
+              <input type="url" class="form-input" id="link-ig-post" placeholder="https://www.instagram.com/username" autocomplete="off" autocapitalize="off" spellcheck="false">
+              <div class="form-helper">Contoh: https://www.instagram.com/namaakun</div>
+              <div class="form-error" id="err-link-ig">Link profil Instagram wajib diisi.</div>
+            </div>
+          </div>
+
+          <div class="form-sec-label">Konfirmasi &amp; Kirim</div>
+          <div class="form-section-title">
+            <span class="sec-num">06</span>
+            <span class="sec-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </span>
+            Persetujuan <em>&amp; Pengiriman</em>
+          </div>
+
+          <div class="form-agreement" id="agree-wrap">
+            <input type="checkbox" id="agree-check" class="custom-checkbox-input">
+            <label for="agree-check" class="custom-checkbox-label">
+              <span class="custom-checkbox-box">
+                <svg class="custom-checkbox-icon" width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline class="cb-path" points="2 6 5 9 10 3"/>
+                </svg>
+              </span>
+              <span>Saya menyatakan bahwa seluruh informasi yang diisi adalah <strong>benar dan dapat dipertanggungjawabkan</strong>. Saya telah membaca dan menyetujui seluruh ketentuan IGITA 2026.</span>
+            </label>
+          </div>
+          <div class="form-error" id="err-agree">Anda harus menyetujui ketentuan untuk mendaftar.</div>
+        </div>
+
+        <!-- SUCCESS Panel -->
+        <div class="reg-success" id="reg-success">
+          <div class="success-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="success-title">Pendaftaran <span>Berhasil!</span></div>
+          <div class="success-sub">Tim kamu telah terdaftar di IGITA 2026. Simpan kode registrasi berikut dan cek email konfirmasi.</div>
+
+          <div class="success-code" id="success-code">IGITA-2026-XXXX</div>
+
+          <div class="success-info" id="success-info">
+            <div class="success-info-row">
+              <div class="success-info-label">Nama Tim</div>
+              <div class="success-info-val" id="suc-team">—</div>
+            </div>
+            <div class="success-info-row">
+              <div class="success-info-label">Kategori</div>
+              <div class="success-info-val" id="suc-cat">—</div>
+            </div>
+            <div class="success-info-row">
+              <div class="success-info-label">Institusi</div>
+              <div class="success-info-val" id="suc-inst">—</div>
+            </div>
+            <div class="success-info-row">
+              <div class="success-info-label">Email Ketua</div>
+              <div class="success-info-val" id="suc-email">—</div>
+            </div>
+          </div>
+
+          <div class="success-next-steps">
+            <div class="success-next-title">// Langkah Selanjutnya</div>
+            <div class="success-step">
+              <div class="success-step-num">1</div>
+              <div class="success-step-text"><strong>Cek email konfirmasi</strong> dari ic@kwikkiangie.ac.id dalam 1×24 jam.</div>
+            </div>
+            <div class="success-step">
+              <div class="success-step-num">2</div>
+              <div class="success-step-text">Bergabung ke <strong>grup WhatsApp resmi</strong> IGITA 2026 (link dikirim via email).</div>
+            </div>
+            <div class="success-step">
+              <div class="success-step-num">3</div>
+              <div class="success-step-text">Hadir pada <strong>Technical Meeting Online, 11 Agustus 2026</strong> pukul 08.00 WIB.</div>
+            </div>
+          </div>
+
+          <button class="btn-reg-close" id="btn-success-close">Selesai &amp; Tutup</button>
+        </div>
+
+      </div><!-- /reg-body -->
+
+      <!-- Footer Nav -->
+      <div class="reg-footer" id="reg-footer">
+        <div class="reg-footer-left" id="step-indicator-text">Langkah 1 dari 3</div>
+        <div class="reg-footer-right">
+          <button class="btn-reg-back" id="btn-back" style="display:none">← Kembali</button>
+          <button class="btn-reg-next" id="btn-next">Lanjut →</button>
+          <button class="btn-reg-submit" id="btn-submit">
+            <span class="btn-submit-text">Kirim</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end reg-modal -->
+  </div><!-- end reg-overlay -->
+
+  <!-- Confirm modal (outside overlay so fixed positioning works correctly) -->
+  <div class="confirm-overlay" id="confirm-overlay" aria-hidden="true">
+    <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="confirm-header">
+        <div class="confirm-title" id="confirm-title">Konfirmasi Pendaftaran</div>
+        <div class="confirm-sub">Periksa kembali data tim sebelum dikirim</div>
+      </div>
+      <div class="confirm-body">
+        <div class="confirm-section-label">// Informasi Tim</div>
+        <div class="confirm-row"><span class="confirm-key">Kategori</span><span class="confirm-val" id="cf-kategori">—</span></div>
+        <div class="confirm-row"><span class="confirm-key">Nama Tim</span><span class="confirm-val" id="cf-nama-tim">—</span></div>
+        <div class="confirm-row"><span class="confirm-key">Institusi</span><span class="confirm-val" id="cf-institusi">—</span></div>
+
+        <div class="confirm-section-label" style="margin-top:16px">// Anggota Tim</div>
+        <div id="cf-members"></div>
+
+        <div class="confirm-section-label" style="margin-top:16px">// Proposal</div>
+        <div class="confirm-row"><span class="confirm-key">File</span><span class="confirm-val" id="cf-file">—</span></div>
+        <div class="confirm-row"><span class="confirm-key">Link IG Twibbon</span><span class="confirm-val" id="cf-link-ig">—</span></div>
+      </div>
+      <div class="confirm-footer">
+        <button class="confirm-btn-edit" id="confirm-edit">← Edit Data</button>
+        <button class="confirm-btn-send" id="confirm-send">Kirim Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden frame for Apps Script submission -->
+  <iframe name="igita-hidden-frame" style="display:none"></iframe>
+  <form id="igita-hidden-form" method="POST" target="igita-hidden-frame" style="display:none">
+    <input type="hidden" id="igita-payload" name="data">
+  </form>
+
+  <script src="register.js"></script>
+
+  <script>
+    /* ── Apps Script URL ── */
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztG3QzGWFKbXdpiNwQbFXpVnpOeM04w2P-9SMrNzsDQYGgJF4ySKe751oqVf2LKk5mng/exec";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const hiddenForm = document.getElementById("igita-hidden-form");
+      if (hiddenForm) hiddenForm.action = APPS_SCRIPT_URL;
+
+      /* ── Progress bar sync ── */
+      const progressFill = document.getElementById('reg-progress-fill');
+      const totalSteps   = 3;
+
+      function syncProgress(step) {
+        if (!progressFill) return;
+        progressFill.style.width = ((step / totalSteps) * 100) + '%';
+      }
+
+      // Observe step indicator text changes to update progress
+      const stepText = document.getElementById('step-indicator-text');
+      if (stepText) {
+        const mo = new MutationObserver(() => {
+          const match = stepText.textContent.match(/(\d+)/);
+          if (match) syncProgress(parseInt(match[1]));
+        });
+        mo.observe(stepText, { childList: true, subtree: true, characterData: true });
+      }
+      syncProgress(1);
+
+      /* ── Drag-and-drop on file zone ── */
+      const zone = document.getElementById('file-upload-zone');
+      const fileInput = document.getElementById('proposal-file');
+      if (zone && fileInput) {
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', e => {
+          e.preventDefault(); zone.classList.remove('drag-over');
+          const file = e.dataTransfer.files[0];
+          if (file) {
+            const dt = new DataTransfer(); dt.items.add(file);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
