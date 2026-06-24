@@ -13,7 +13,7 @@
   const stepText  = document.getElementById('step-indicator-text');
 
   let currentStep = 1;
-  const TOTAL_STEPS = 3;
+  const TOTAL_STEPS = 4;
 
   // ============================================================
   // ATURAN VALIDASI
@@ -527,6 +527,24 @@
     showErr('err-link-ig', badLinkIG, badLinkIG ? 'Link profil Instagram wajib diisi. Contoh: https://www.instagram.com/username' : '');
     if (badLinkIG) ok = false;
 
+    return ok;
+  }
+
+  function validateStep4() {
+    let ok = true;
+
+    // Bukti bayar (image)
+    const buktiInput = document.getElementById('bukti-bayar');
+    const buktiFile  = buktiInput?.files[0];
+    const hasBukti   = buktiFile && buktiFile.size > 0 && buktiFile.size <= 5 * 1024 * 1024;
+    setInputErr('bukti-bayar', !hasBukti);
+    showErr('err-bukti-bayar', !hasBukti, !hasBukti
+      ? (buktiFile && buktiFile.size > 5 * 1024 * 1024
+          ? 'Ukuran file terlalu besar. Maks. 5MB.'
+          : 'Screenshot bukti pembayaran wajib diunggah.')
+      : '');
+    if (!hasBukti) ok = false;
+
     const agreed = document.getElementById('agree-check').checked;
     showErr('err-agree', !agreed);
     document.getElementById('agree-wrap').style.borderColor = agreed ? '' : 'rgba(255,80,80,0.4)';
@@ -588,6 +606,7 @@
     });
     document.getElementById('conn-1-2').classList.toggle('done', currentStep > 1);
     document.getElementById('conn-2-3').classList.toggle('done', currentStep > 2);
+    document.getElementById('conn-3-4').classList.toggle('done', currentStep > 3);
 
     btnBack.style.display = currentStep > 1 ? 'inline-flex' : 'none';
     const isLast = currentStep === TOTAL_STEPS;
@@ -605,6 +624,7 @@
     let valid = false;
     if (currentStep === 1) valid = validateStep1();
     else if (currentStep === 2) valid = validateStep2();
+    else if (currentStep === 3) valid = validateStep3();
     if (valid && currentStep < TOTAL_STEPS) {
       currentStep++;
       updateStepUI();
@@ -680,6 +700,8 @@
     const file = fileInput?.files[0];
     document.getElementById('cf-file').textContent = file ? file.name : '—';
     document.getElementById('cf-link-ig').textContent = get('link-ig-post') || '—';
+    const buktiFile = document.getElementById('bukti-bayar')?.files[0];
+    document.getElementById('cf-bukti-bayar').textContent = buktiFile ? buktiFile.name : '—';
 
     confirmOverlay.classList.add('open');
     confirmOverlay.setAttribute('aria-hidden', 'false');
@@ -700,7 +722,7 @@
   });
 
   btnSubmit.addEventListener('click', () => {
-    if (!validateStep3()) return;
+    if (!validateStep4()) return;
     openConfirmModal();
   });
 
@@ -749,6 +771,19 @@
           reader.readAsDataURL(file);
         });
         formData.buktiBayar = { base64, mimeType: file.type, fileName: file.name };
+      }
+
+      // Bukti transfer ke base64
+      const buktiInput = document.getElementById('bukti-bayar');
+      const buktiFile  = buktiInput?.files[0];
+      if (buktiFile) {
+        const base64Bukti = await new Promise((res, rej) => {
+          const reader = new FileReader();
+          reader.onload  = () => res(reader.result.split(',')[1]);
+          reader.onerror = () => rej(new Error('Gagal membaca file bukti'));
+          reader.readAsDataURL(buktiFile);
+        });
+        formData.buktiTransfer = { base64: base64Bukti, mimeType: buktiFile.type, fileName: buktiFile.name };
       }
 
       // Kirim ke Apps Script via fetch dengan CORS
@@ -898,7 +933,7 @@
 
     // Fetch gagal → tampilkan teks fallback, jangan disable apapun
     if (count < 0) {
-      if (infoEl) infoEl.textContent = 'Kuota terbatas · maks. 10 tim';
+      if (infoEl) infoEl.textContent = 'Kuota terbatas';
       return;
     }
 
