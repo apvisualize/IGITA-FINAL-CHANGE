@@ -878,11 +878,110 @@
   }
 
   // ============================================================
+  // QUOTA CHECK — Auto-disable form jika kuota per kategori penuh
+  // ============================================================
+  const QUOTA_MAX = 10;
+
+  /**
+   * updateQuotaDisplay — update UI per kategori
+   * @param {'internal'|'external'} category
+   * @param {number} count  -1 = gagal fetch (fallback text)
+   */
+  function updateQuotaDisplay(category, count) {
+    const card   = document.getElementById('card-' + category);
+    const radio  = document.getElementById('radio-' + category);
+    const infoEl = document.getElementById('quota-info-' + category);
+    if (!card) return;
+
+    // Stop loading animation
+    if (infoEl) infoEl.classList.remove('loading');
+
+    // Fetch gagal → tampilkan teks fallback, jangan disable apapun
+    if (count < 0) {
+      if (infoEl) infoEl.textContent = 'Kuota terbatas · maks. 10 tim';
+      return;
+    }
+
+    const isFull = count >= QUOTA_MAX;
+    const used   = Math.min(count, QUOTA_MAX);
+
+    // Counter text
+    if (infoEl) {
+      infoEl.textContent = isFull
+        ? QUOTA_MAX + '/' + QUOTA_MAX + ' Tim · Kuota habis'
+        : used + '/' + QUOTA_MAX + ' Tim terdaftar · ' + (QUOTA_MAX - used) + ' slot tersisa';
+      infoEl.classList.toggle('full', isFull);
+    }
+
+    if (isFull) {
+      card.classList.add('quota-full');
+      card.setAttribute('aria-disabled', 'true');
+      if (radio) {
+        if (radio.checked) { radio.checked = false; }
+        radio.disabled = true;
+      }
+      // Tambah badge "KUOTA PENUH" jika belum ada
+      if (!card.querySelector('.quota-full-badge')) {
+        const badge = document.createElement('div');
+        badge.className = 'quota-full-badge';
+        badge.innerHTML =
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+          ' stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg> KUOTA PENUH';
+        const bar = card.querySelector('.cat-card-quota-bar');
+        if (bar) card.insertBefore(badge, bar);
+        else card.appendChild(badge);
+      }
+    } else {
+      card.classList.remove('quota-full');
+      card.removeAttribute('aria-disabled');
+      if (radio) radio.disabled = false;
+      const badge = card.querySelector('.quota-full-badge');
+      if (badge) badge.remove();
+    }
+  }
+
+  /**
+   * checkQuota — fetch jumlah pendaftar dari Apps Script
+   * Apps Script perlu doGet() yang menerima ?action=getQuota dan return:
+   *   { "status": "ok", "internal": N, "external": M }
+   */
+  async function checkQuota() {
+    const url = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : '';
+    if (!url) {
+      updateQuotaDisplay('internal', -1);
+      updateQuotaDisplay('external', -1);
+      return;
+    }
+    try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(url + '?action=checkQuota', {
+        method: 'GET',
+        mode: 'cors',
+        signal: controller.signal,
+      });
+      clearTimeout(t);
+      const data = await res.json();
+      if (typeof data.internal === 'number' && typeof data.external === 'number') {
+        updateQuotaDisplay('internal', data.internal);
+        updateQuotaDisplay('external', data.external);
+      } else {
+        throw new Error('unexpected quota response');
+      }
+    } catch (err) {
+      console.warn('[IGITA] Quota check failed:', err.message);
+      updateQuotaDisplay('internal', -1);
+      updateQuotaDisplay('external', -1);
+    }
+  }
+
+  // ============================================================
   // INIT
   // ============================================================
   initInputSetup();
   injectStepSVGs();
   updateStepUI();
+  checkQuota(); // cek kuota saat halaman dimuat
 
   // File upload nama file display
   // proposal file name display handled by setupProposalInput
