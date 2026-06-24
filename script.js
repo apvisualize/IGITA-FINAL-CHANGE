@@ -178,11 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       label    : 'Close Registration & Batas Proposal dalam',
-      deadline : new Date('2026-08-14T17:00:00Z'), // 15 Agu 00.00 WIB (end of day 14)
-    },
-    {
-      label    : 'Pengumuman Top 10 Finalis dalam',
-      deadline : new Date('2026-08-18T01:00:00Z'), // 18 Agu 08.00 WIB
+      deadline : new Date('2026-08-14T17:00:00Z'), // 14 Agu 24.00 WIB
     },
     {
       label    : 'Technical Meeting dalam',
@@ -190,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       label    : 'Pre Event berakhir dalam',
-      deadline : new Date('2026-09-22T17:00:00Z'), // 23 Sep 00.00 WIB
+      deadline : new Date('2026-09-22T17:00:00Z'), // 22 Sep 24.00 WIB
     },
     {
       label    : 'Final Contest & Awarding dalam',
