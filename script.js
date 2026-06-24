@@ -173,24 +173,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const PHASES = [
     {
-      label    : 'Pembukaan & Technical Meeting dalam',
-      deadline : new Date('2026-08-11T01:00:00Z'), // 11 Agu 08.00 WIB
+      label    : 'Open Registration dalam',
+      deadline : new Date('2026-08-01T01:00:00Z'), // 1 Agu 08.00 WIB
     },
     {
-      label    : 'Masa Pengerjaan berakhir dalam',
-      deadline : new Date('2026-09-13T17:00:00Z'), // 14 Sep 00.00 WIB (hari-H presentasi)
+      label    : 'Close Registration & Batas Proposal dalam',
+      deadline : new Date('2026-08-14T17:00:00Z'), // 15 Agu 00.00 WIB (end of day 14)
     },
     {
-      label    : 'Presentasi Internal KKG (Day 1) dalam',
-      deadline : new Date('2026-09-14T01:00:00Z'), // 14 Sep 08.00 WIB
+      label    : 'Pengumuman Top 10 Finalis dalam',
+      deadline : new Date('2026-08-18T01:00:00Z'), // 18 Agu 08.00 WIB
     },
     {
-      label    : 'Presentasi SMA/SMK (Day 2) dalam',
-      deadline : new Date('2026-09-15T01:00:00Z'), // 15 Sep 08.00 WIB
+      label    : 'Technical Meeting dalam',
+      deadline : new Date('2026-08-20T11:30:00Z'), // 20 Agu 18.30 WIB
     },
     {
-      label    : 'Awarding & Closing Ceremony dalam',
-      deadline : new Date('2026-09-16T01:00:00Z'), // 16 Sep 08.00 WIB
+      label    : 'Pre Event berakhir dalam',
+      deadline : new Date('2026-09-22T17:00:00Z'), // 23 Sep 00.00 WIB
+    },
+    {
+      label    : 'Final Contest & Awarding dalam',
+      deadline : new Date('2026-09-23T02:15:00Z'), // 23 Sep 09.15 WIB
     },
   ];
 
