@@ -2702,7 +2702,7 @@ footer::before {
 .form-helper {
   font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
   color: rgba(107,127,168,0.7); margin-top: 4px; line-height: 1.55; letter-spacing: 0.02em;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; white-space: normal;
   max-width: 100%;
 }
 
@@ -4247,7 +4247,7 @@ body.reg-page .reg-close { display: none !important; }
 }
 
 /* ── Inner padding container ─────────────────────────────────── */
-.igita-notif-modal > .notif-icon-ring,
+/* notif-icon-ring dikecualikan — butuh display:flex untuk center icon SVG */
 .igita-notif-modal > .notif-type-label,
 .igita-notif-modal > .notif-title-el,
 .igita-notif-modal > .notif-message-el,

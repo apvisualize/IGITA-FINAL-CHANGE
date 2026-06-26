@@ -12,6 +12,13 @@
   <meta name="theme-color" content="#020810">
   <link rel="icon" type="image/png" href="asset/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Early registration deadline check — set class before CSS loads to prevent flash -->
+  <script>
+    if (new Date() >= new Date('2026-08-19T16:59:59Z')) {
+      document.documentElement.classList.add('reg-is-closed');
+    }
+  </script>
+
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -203,6 +210,26 @@
 
     /* ── File upload drag-over (handled in style.css) ── */
 
+    /* ── Form helper note (below a form-row, full width) ── */
+    .form-helper-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: rgba(107,127,168,0.65);
+      letter-spacing: 0.02em;
+      line-height: 1.55;
+      margin-top: -6px;
+      margin-bottom: 14px;
+      white-space: normal;
+    }
+    .form-helper-note svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: rgba(0,136,255,0.5);
+    }
+
     /* ── Agreement checked state ── */
     .form-agreement:has(.custom-checkbox-input:checked) {
       border-color: rgba(0,212,255,0.3);
@@ -313,6 +340,204 @@
       font-family: 'JetBrains Mono', monospace;
       letter-spacing: 0.02em;
     }
+
+    /* ─────────────────────────────────────────────────────────
+       REGISTRATION CLOSED SCREEN
+    ───────────────────────────────────────────────────────── */
+
+    /* Hide form & back button when closed */
+    html.reg-is-closed .reg-overlay,
+    html.reg-is-closed .confirm-overlay,
+    html.reg-is-closed .btn-back-fixed { display: none !important; }
+
+    /* Show closed screen when class is present */
+    .reg-closed-screen { display: none; }
+    html.reg-is-closed .reg-closed-screen {
+      display: flex;
+      position: fixed; inset: 0; z-index: 99999;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+
+    /* Page-level bg — red-tinted */
+    html.reg-is-closed body.reg-page {
+      background:
+        radial-gradient(ellipse 120% 80% at 15% 10%, rgba(220,30,30,0.08) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 60% at 85% 90%, rgba(180,20,20,0.06) 0%, transparent 50%),
+        #02060e;
+    }
+
+    /* Grid overlay */
+    .rc-bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,60,60,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,60,60,0.022) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 0%, transparent 90%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 0%, transparent 90%);
+    }
+
+    /* Ambient orbs */
+    .rc-orb {
+      position: fixed; border-radius: 50%; filter: blur(100px);
+      pointer-events: none; z-index: 0;
+    }
+    .rc-orb-1 {
+      width: 600px; height: 600px; top: -200px; right: -100px;
+      background: radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 65%);
+    }
+    .rc-orb-2 {
+      width: 500px; height: 500px; bottom: -150px; left: -80px;
+      background: radial-gradient(circle, rgba(200,30,30,0.07) 0%, transparent 65%);
+    }
+
+    /* Main card */
+    .rc-card {
+      position: relative; z-index: 1;
+      width: min(480px, 100%);
+      background: linear-gradient(150deg, #0d0709 0%, #070408 100%);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 20px; overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03),
+        0 32px 80px rgba(0,0,0,0.75),
+        0 0 60px rgba(239,68,68,0.06);
+    }
+
+    /* Top accent bar */
+    .rc-accent-bar {
+      height: 2px; width: 100%;
+      background: linear-gradient(90deg, #ef4444 0%, #f87171 40%, transparent 80%);
+      box-shadow: 0 0 14px rgba(239,68,68,0.5);
+    }
+
+    /* HUD corner brackets */
+    .rc-corner {
+      position: absolute; width: 18px; height: 18px;
+      pointer-events: none; z-index: 2;
+    }
+    .rc-corner-tl { top: 10px; left: 10px;
+      border-top: 1.5px solid rgba(239,68,68,0.45);
+      border-left: 1.5px solid rgba(239,68,68,0.45); }
+    .rc-corner-tr { top: 10px; right: 10px;
+      border-top: 1.5px solid rgba(239,68,68,0.45);
+      border-right: 1.5px solid rgba(239,68,68,0.45); }
+    .rc-corner-bl { bottom: 10px; left: 10px;
+      border-bottom: 1.5px solid rgba(239,68,68,0.45);
+      border-left: 1.5px solid rgba(239,68,68,0.45); }
+    .rc-corner-br { bottom: 10px; right: 10px;
+      border-bottom: 1.5px solid rgba(239,68,68,0.45);
+      border-right: 1.5px solid rgba(239,68,68,0.45); }
+
+    /* Card inner glow */
+    .rc-card-glow {
+      position: absolute; top: -90px; right: -70px;
+      width: 280px; height: 280px; border-radius: 50%;
+      filter: blur(50px); pointer-events: none; z-index: 0;
+      background: radial-gradient(circle, rgba(239,68,68,0.14) 0%, transparent 70%);
+    }
+
+    /* Inner padding wrapper */
+    .rc-card-inner { position: relative; z-index: 1; padding: 36px; }
+
+    /* Icon ring */
+    @keyframes rcPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.18), inset 0 0 12px rgba(239,68,68,0.06); }
+      50%       { box-shadow: 0 0 38px rgba(239,68,68,0.34), inset 0 0 20px rgba(239,68,68,0.14); }
+    }
+    .rc-icon-ring {
+      width: 70px; height: 70px; border-radius: 50%;
+      border: 1.5px solid rgba(239,68,68,0.32);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.35); color: #ef4444;
+      margin-bottom: 22px;
+      animation: rcPulse 2.5s ease-in-out infinite;
+    }
+
+    /* Type label */
+    .rc-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.2em; font-weight: 700;
+      color: #ef4444; margin-bottom: 8px;
+    }
+
+    /* Title */
+    .rc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.75rem; font-weight: 800;
+      color: #eef2ff; line-height: 1.2; margin-bottom: 12px;
+    }
+    .rc-title em {
+      font-style: normal;
+      background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Subtitle */
+    .rc-sub {
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+      color: #7c8db5; line-height: 1.65; margin-bottom: 24px;
+    }
+    .rc-sub strong { color: #b0bcda; }
+
+    /* Info grid */
+    .rc-info {
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(239,68,68,0.1);
+      border-radius: 10px; padding: 16px 18px;
+      margin-bottom: 28px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .rc-info-row {
+      display: flex; align-items: flex-start; gap: 14px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;
+    }
+    .rc-info-key {
+      color: rgba(140,165,210,0.5); letter-spacing: 0.05em;
+      flex-shrink: 0; min-width: 74px;
+    }
+    .rc-info-val { color: #b0bcda; letter-spacing: 0.02em; line-height: 1.5; }
+    .rc-status-closed {
+      display: inline-block;
+      font-weight: 700; letter-spacing: 0.15em; color: #ef4444;
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.28);
+      border-radius: 4px; padding: 2px 8px; font-size: 0.7rem;
+    }
+
+    /* Back button */
+    .rc-btn {
+      display: block; width: 100%; padding: 14px 20px;
+      border-radius: 10px; border: 1px solid rgba(0,136,255,0.25);
+      font-family: 'Syne', sans-serif; font-size: 0.875rem;
+      font-weight: 700; letter-spacing: 0.06em; color: #0088ff;
+      background: linear-gradient(135deg, rgba(0,136,255,0.1), rgba(0,0,0,0.2));
+      text-align: center; text-decoration: none; cursor: pointer;
+      transition: all 0.22s ease; margin-bottom: 16px;
+      box-shadow: 0 0 16px rgba(0,136,255,0.08);
+    }
+    .rc-btn:hover {
+      background: linear-gradient(135deg, rgba(0,136,255,0.18), rgba(0,0,0,0.2));
+      border-color: rgba(0,136,255,0.5);
+      box-shadow: 0 0 24px rgba(0,136,255,0.2);
+      transform: translateY(-1px); color: #00d4ff;
+    }
+    .rc-btn:active { transform: scale(0.98); }
+
+    /* Contact line */
+    .rc-contact {
+      font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+      color: #4a5a7a; text-align: center; line-height: 1.65;
+    }
+    .rc-contact a { color: rgba(0,136,255,0.65); text-decoration: none; }
+    .rc-contact a:hover { color: #0088ff; }
+
+    /* Mobile responsive */
+    @media (max-width: 520px) {
+      .rc-card-inner { padding: 28px 22px; }
+      .rc-title { font-size: 1.45rem; }
+    }
   </style>
 </head>
 <body class="reg-page">
@@ -414,7 +639,7 @@
               <div class="cat-check"></div>
               <div class="cat-card-badge">INTERNAL</div>
               <div class="cat-card-title">Mahasiswa KKG</div>
-              <div class="cat-card-desc">Mahasiswa aktif Kelompok Keahlian/Gerbang. Final Contest 23 September 2026.</div>
+              <div class="cat-card-desc">Mahasiswa aktif Kelompok Keahlian/Gerbang. 23 September 2026.</div>
               <div class="cat-card-quota-info loading" id="quota-info-internal">Memeriksa kuota...</div>
             </label>
             <label class="cat-select-card ext" id="card-external">
@@ -422,7 +647,7 @@
               <div class="cat-check"></div>
               <div class="cat-card-badge">EKSTERNAL</div>
               <div class="cat-card-title">SMA / SMK Sederajat</div>
-              <div class="cat-card-desc">Pelajar tingkat menengah. Final Contest 23 September 2026.</div>
+              <div class="cat-card-desc">Pelajar tingkat menengah. 23 September 2026.</div>
               <div class="cat-card-quota-info loading" id="quota-info-external">Memeriksa kuota...</div>
             </label>
           </div>
@@ -491,9 +716,12 @@
               <div class="form-group">
                 <label class="form-label" for="m1-twibbon">Link Post Twibbon <span class="req">*</span></label>
                 <input type="url" class="form-input" id="m1-twibbon" placeholder="https://www.instagram.com/p/..." autocomplete="off" autocapitalize="off" spellcheck="false">
-                <div class="form-helper">Link postingan Instagram setelah upload foto twibbon IGITA 2026.</div>
                 <div class="form-error" id="err-m1-twibbon">Link twibbon wajib diisi.</div>
               </div>
+            </div>
+            <div class="form-helper-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+              Link postingan Instagram setelah upload foto twibbon IGITA 2026.
             </div>
             <div class="form-row single jurusan-row" style="display:none">
               <div class="form-group">
@@ -521,7 +749,7 @@
                 <div class="form-error" id="err-m2-email">Email valid wajib diisi.</div>
               </div>
             </div>
-            <div class="form-row single">
+            <div class="form-row">
               <div class="form-group">
                 <label class="form-label" for="m2-hp">No. HP / WA <span class="req">*</span></label>
                 <input type="tel" class="form-input" id="m2-hp" placeholder="08xxxxxxxxxx">
@@ -759,6 +987,85 @@
   <form id="igita-hidden-form" method="POST" target="igita-hidden-frame" style="display:none">
     <input type="hidden" id="igita-payload" name="data">
   </form>
+
+  <!-- =============================================
+       REGISTRATION CLOSED SCREEN
+       Ditampilkan ketika sudah melewati deadline: 19 Agustus 2026 23:59 WIB
+       ============================================= -->
+  <div class="reg-closed-screen" id="reg-closed-screen" role="alertdialog" aria-label="Pendaftaran Ditutup" aria-modal="true">
+
+    <!-- Bg decorations -->
+    <div class="rc-bg-grid"  aria-hidden="true"></div>
+    <div class="rc-orb rc-orb-1" aria-hidden="true"></div>
+    <div class="rc-orb rc-orb-2" aria-hidden="true"></div>
+
+    <!-- Card -->
+    <div class="rc-card">
+      <div class="rc-accent-bar" aria-hidden="true"></div>
+
+      <!-- HUD corners -->
+      <div class="rc-corner rc-corner-tl" aria-hidden="true"></div>
+      <div class="rc-corner rc-corner-tr" aria-hidden="true"></div>
+      <div class="rc-corner rc-corner-bl" aria-hidden="true"></div>
+      <div class="rc-corner rc-corner-br" aria-hidden="true"></div>
+
+      <!-- Inner glow -->
+      <div class="rc-card-glow" aria-hidden="true"></div>
+
+      <div class="rc-card-inner">
+
+        <!-- Lock icon -->
+        <div class="rc-icon-ring" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+
+        <!-- Label -->
+        <div class="rc-label">// PENDAFTARAN DITUTUP</div>
+
+        <!-- Title -->
+        <h1 class="rc-title">Pendaftaran <em>Telah Berakhir</em></h1>
+
+        <!-- Subtitle -->
+        <p class="rc-sub">
+          Batas akhir pendaftaran IGITA 2026 adalah <strong>19 Agustus 2026 pukul 23:59 WIB</strong>
+          dan kini telah terlewati.<br><br>
+          Terima kasih atas antusiasme seluruh peserta! Pantau pengumuman selanjutnya
+          melalui media sosial resmi kami.
+        </p>
+
+        <!-- Info rows -->
+        <div class="rc-info">
+          <div class="rc-info-row">
+            <span class="rc-info-key">// Status</span>
+            <span class="rc-info-val"><span class="rc-status-closed">CLOSED</span></span>
+          </div>
+          <div class="rc-info-row">
+            <span class="rc-info-key">// Deadline</span>
+            <span class="rc-info-val">19 Agustus 2026 &middot; 23:59 WIB</span>
+          </div>
+          <div class="rc-info-row">
+            <span class="rc-info-key">// Kontak</span>
+            <span class="rc-info-val">igitaofficial@gmail.com</span>
+          </div>
+        </div>
+
+        <!-- CTA: back home -->
+        <a href="index.html" class="rc-btn">← Kembali ke Halaman Utama</a>
+
+        <!-- Contact footnote -->
+        <div class="rc-contact">
+          Pertanyaan? Hubungi kami di
+          <a href="mailto:igitaofficial@gmail.com">igitaofficial@gmail.com</a>
+          atau <a href="https://www.instagram.com/igita.ibikkg" target="_blank" rel="noopener">@igita.ibikkg</a>
+        </div>
+
+      </div><!-- /rc-card-inner -->
+    </div><!-- /rc-card -->
+
+  </div><!-- /reg-closed-screen -->
 
   <script src="register.js"></script>
 

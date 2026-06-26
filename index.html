@@ -17,6 +17,158 @@
   <link rel="icon" type="image/png" href="asset/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ─────────────────────────────────────────────────────────
+       NOTIFICATION MODAL — igita-notif-overlay
+       (dipakai untuk pesan "Pendaftaran Ditutup" di index.html)
+    ───────────────────────────────────────────────────────── */
+    #igita-notif-overlay {
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      background: rgba(2,4,8,0);
+      backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s cubic-bezier(0.4,0,0.2,1),
+                  background 0.28s ease, backdrop-filter 0.28s ease;
+    }
+    #igita-notif-overlay.open {
+      opacity: 1; pointer-events: auto;
+      background: rgba(2,4,8,0.78);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .igita-notif-modal {
+      position: relative; width: min(440px, 100%);
+      background: linear-gradient(150deg, #080f1e 0%, #040a14 100%);
+      border: 1px solid rgba(0,136,255,0.14); border-radius: 18px; overflow: hidden;
+      transform: scale(0.88) translateY(20px);
+      transition: transform 0.36s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04),
+                  0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.4);
+    }
+    #igita-notif-overlay.open .igita-notif-modal { transform: scale(1) translateY(0); }
+
+    .notif-accent-bar { height: 2px; width: 100%; }
+    .notif-bg-grid {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background-image: linear-gradient(rgba(0,136,255,0.025) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,136,255,0.025) 1px, transparent 1px);
+      background-size: 38px 38px;
+    }
+    .notif-glow-orb {
+      position: absolute; top: -80px; right: -60px;
+      width: 260px; height: 260px; border-radius: 50%;
+      filter: blur(60px); pointer-events: none; z-index: 0;
+    }
+    .notif-icon-ring,
+    .notif-type-label,
+    .notif-title-el,
+    .notif-message-el,
+    .notif-code-wrap,
+    .notif-ok-btn { position: relative; z-index: 1; }
+
+    .notif-icon-ring {
+      width: 68px; height: 68px; border-radius: 50%; border: 1.5px solid;
+      display: flex; align-items: center; justify-content: center;
+      margin: 36px 0 0 32px; background: rgba(0,0,0,0.35);
+    }
+    .notif-icon-ring span { display: flex; align-items: center; justify-content: center; }
+    .notif-type-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.2em; font-weight: 700; margin: 20px 32px 6px;
+    }
+    .notif-title-el {
+      font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800;
+      color: #eef2ff; line-height: 1.25; margin: 0 32px 12px;
+    }
+    .notif-message-el {
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+      color: #7c8db5; line-height: 1.65; margin: 0 32px 24px; white-space: pre-line;
+    }
+    .notif-code-wrap {
+      margin: 0 32px 24px; padding: 14px 16px;
+      background: rgba(0,0,0,0.3); border-radius: 10px;
+      border: 1px solid rgba(0,136,255,0.1); display: none;
+    }
+    .notif-code-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+      letter-spacing: 0.14em; color: #5a6d8a; margin-bottom: 8px; text-transform: uppercase;
+    }
+    .notif-code-val {
+      font-family: 'JetBrains Mono', monospace; font-size: 1.05rem;
+      font-weight: 700; letter-spacing: 0.1em; padding: 10px 14px;
+      border-radius: 7px; border: 1px solid; background: rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    .notif-ok-btn {
+      display: block; width: calc(100% - 64px); margin: 0 32px 32px;
+      padding: 14px 20px; border-radius: 10px; border: 1px solid;
+      font-family: 'Syne', sans-serif; font-size: 0.875rem; font-weight: 700;
+      letter-spacing: 0.08em; cursor: pointer; position: relative; overflow: hidden;
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.3s ease;
+    }
+    .notif-ok-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0); transition: background 0.2s ease;
+    }
+    .notif-ok-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .notif-ok-btn:hover::before { background: rgba(255,255,255,0.06); }
+    .notif-ok-btn:active { transform: scale(0.98) translateY(0); }
+
+    /* ─────────────────────────────────────────────────────────
+       REGISTRATION CLOSED — button & link states (index.html)
+    ───────────────────────────────────────────────────────── */
+
+    /* Navbar CTA */
+    a.nav-cta.reg-closed-btn {
+      background: rgba(239,68,68,0.08) !important;
+      border-color: rgba(239,68,68,0.3) !important;
+      color: #f87171 !important;
+    }
+    a.nav-cta.reg-closed-btn:hover {
+      background: rgba(239,68,68,0.14) !important;
+      box-shadow: 0 0 16px rgba(239,68,68,0.15) !important;
+      transform: none;
+    }
+
+    /* Mobile CTA */
+    a.mobile-cta.reg-closed-btn {
+      background: rgba(239,68,68,0.08) !important;
+      border-color: rgba(239,68,68,0.3) !important;
+      color: #f87171 !important;
+    }
+
+    /* Hero / CTA section primary button */
+    a.btn-primary.reg-closed-btn {
+      background: rgba(15,15,22,0.7) !important;
+      border: 1px solid rgba(100,100,120,0.28) !important;
+      color: #5a6d8a !important;
+      box-shadow: none !important;
+      pointer-events: auto; cursor: pointer;
+    }
+    a.btn-primary.reg-closed-btn:hover { transform: none; filter: none; }
+    a.btn-primary.reg-closed-btn::before,
+    a.btn-primary.reg-closed-btn::after { display: none !important; }
+
+    /* Category card wrapper */
+    a.reg-closed-btn .cat-card {
+      position: relative;
+      opacity: 0.65;
+      transition: opacity 0.2s ease;
+    }
+    a.reg-closed-btn:hover .cat-card { opacity: 0.8; }
+    a.reg-closed-btn .cat-card::after {
+      content: '// Pendaftaran Ditutup';
+      position: absolute; inset: 0; border-radius: 14px;
+      background: rgba(2,6,14,0.78);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+      color: #ef4444; opacity: 0; transition: opacity 0.22s ease;
+      pointer-events: none;
+    }
+    a.reg-closed-btn:hover .cat-card::after { opacity: 1; }
+  </style>
 </head>
 <body>
 
@@ -279,7 +431,7 @@
           <div class="cat-card external">
             <div class="cat-badge">EKSTERNAL</div>
             <div class="cat-title">SMA / SMK Sederajat</div>
-            <div class="cat-desc">Untuk pelajar tingkat menengah. Final Contest &amp; Awarding pada 23 September 2026.</div>
+            <div class="cat-desc">Untuk pelajar tingkat menengah. Awarding pada 23 September 2026.</div>
             <div class="cat-quota">Kuota terbatas</div>
           </div>
         </a>
@@ -288,7 +440,7 @@
           <div class="cat-card internal">
             <div class="cat-badge">INTERNAL</div>
             <div class="cat-title">Mahasiswa KKG</div>
-            <div class="cat-desc">Khusus mahasiswa aktif Kelompok Keahlian/Gerbang (KKG). Final Contest &amp; Awarding pada 23 September 2026.</div>
+            <div class="cat-desc">Khusus mahasiswa aktif Kelompok Keahlian/Gerbang (KKG). Awarding pada 23 September 2026.</div>
             <div class="cat-quota">Kuota terbatas</div>
           </div>
         </a>
@@ -309,10 +461,10 @@
             <div class="tl-status">Pendaftaran dibuka resmi untuk kategori SMA/SMK sederajat &amp; internal kampus, bersamaan dengan dimulainya periode penyusunan proposal.</div>
           </div>
         </div>
-        <div class="tl-item" data-start="2026-08-14" data-end="2026-08-14">
-          <div class="tl-dot">14<br>AGU</div>
+        <div class="tl-item" data-start="2026-08-19" data-end="2026-08-19">
+          <div class="tl-dot">19<br>AGU</div>
           <div class="tl-content">
-            <div class="tl-date">14 Agustus 2026</div>
+            <div class="tl-date">19 Agustus 2026</div>
             <div class="tl-title">Close Registration &amp; Batas Pengumpulan Proposal</div>
             <div class="tl-status">Batas akhir pendaftaran dan pengumpulan proposal bagi seluruh calon peserta.</div>
           </div>
@@ -345,7 +497,7 @@
           <div class="tl-dot">23<br>SEP</div>
           <div class="tl-content">
             <div class="tl-date">23 September 2026 · 09:15 – 16:15</div>
-            <div class="tl-title">Final Contest &amp; Awarding Ceremony</div>
+            <div class="tl-title">Awarding Ceremony</div>
             <div class="tl-status">Seminar tamu pembicara · Pameran karya di Auditorium Lt.2 · Penyerahan penghargaan · Modern Dance &amp; Live Music Band Kampus.</div>
           </div>
         </div>
@@ -512,6 +664,26 @@
   </footer>
 
   
+
+  <!-- Notification Modal — digunakan untuk "Pendaftaran Ditutup" -->
+  <div id="igita-notif-overlay" aria-hidden="true">
+    <div class="igita-notif-modal" id="igita-notif-modal">
+      <div class="notif-accent-bar"  id="notif-accent-bar"></div>
+      <div class="notif-bg-grid"    aria-hidden="true"></div>
+      <div class="notif-glow-orb"   id="notif-glow-orb"></div>
+      <div class="notif-icon-ring"  id="notif-icon-ring">
+        <span id="notif-icon-inner"></span>
+      </div>
+      <div class="notif-type-label" id="notif-type-label"></div>
+      <div class="notif-title-el"   id="notif-title-el"></div>
+      <div class="notif-message-el" id="notif-message-el"></div>
+      <div class="notif-code-wrap"  id="notif-code-wrap">
+        <div class="notif-code-label">// Kode Registrasi — Simpan dan hubungi panitia</div>
+        <div class="notif-code-val" id="notif-code-val"></div>
+      </div>
+      <button class="notif-ok-btn" id="notif-ok-btn">Mengerti</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

@@ -1,3 +1,136 @@
+// ============================================================
+// REGISTRATION DEADLINE — 19 Agustus 2026 23:59:59 WIB
+// WIB = UTC+7  →  23:59:59 WIB = 16:59:59 UTC
+// ============================================================
+const REG_DEADLINE = new Date('2026-08-19T16:59:59Z');
+
+function isRegistrationClosed() {
+  return Date.now() >= REG_DEADLINE.getTime();
+}
+
+// ============================================================
+// NOTIFICATION SYSTEM — showNotif()
+// Dipanggil saat user klik link pendaftaran setelah deadline
+// ============================================================
+function showNotif({ type = 'info', title, message, code = null, onClose = null } = {}) {
+  const CONFIGS = {
+    warning: {
+      color : '#f59e0b',
+      glow  : 'rgba(245,158,11,0.22)',
+      border: 'rgba(245,158,11,0.35)',
+      label : '// PERINGATAN',
+      icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    },
+    error: {
+      color : '#ef4444',
+      glow  : 'rgba(239,68,68,0.22)',
+      border: 'rgba(239,68,68,0.35)',
+      label : '// ERROR',
+      icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    },
+    info: {
+      color : '#00d4ff',
+      glow  : 'rgba(0,212,255,0.22)',
+      border: 'rgba(0,212,255,0.35)',
+      label : '// INFO',
+      icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    },
+  };
+  const cfg = CONFIGS[type] || CONFIGS.info;
+
+  const overlay   = document.getElementById('igita-notif-overlay');
+  if (!overlay) return; // guard — modal belum di DOM
+  const accentBar = document.getElementById('notif-accent-bar');
+  const glowOrb   = document.getElementById('notif-glow-orb');
+  const iconRing  = document.getElementById('notif-icon-ring');
+  const iconInner = document.getElementById('notif-icon-inner');
+  const typeLabel = document.getElementById('notif-type-label');
+  const titleEl   = document.getElementById('notif-title-el');
+  const msgEl     = document.getElementById('notif-message-el');
+  const codeWrap  = document.getElementById('notif-code-wrap');
+  const codeVal   = document.getElementById('notif-code-val');
+  const okBtn     = document.getElementById('notif-ok-btn');
+
+  accentBar.style.background = `linear-gradient(90deg, ${cfg.color} 0%, transparent 80%)`;
+  glowOrb.style.background   = `radial-gradient(circle, ${cfg.glow} 0%, transparent 70%)`;
+  iconRing.style.borderColor = cfg.border;
+  iconRing.style.boxShadow   = `0 0 24px ${cfg.glow}, inset 0 0 14px ${cfg.glow}`;
+  iconInner.style.color      = cfg.color;
+  iconInner.innerHTML        = cfg.icon;
+  typeLabel.textContent      = cfg.label;
+  typeLabel.style.color      = cfg.color;
+  titleEl.textContent        = title   || '';
+  msgEl.textContent          = message || '';
+  okBtn.style.background     = `linear-gradient(135deg, ${cfg.glow}, rgba(0,0,0,0.2))`;
+  okBtn.style.borderColor    = cfg.border;
+  okBtn.style.boxShadow      = `0 0 18px ${cfg.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`;
+  okBtn.style.color          = cfg.color;
+
+  if (code) {
+    codeWrap.style.display    = 'block';
+    codeVal.textContent       = code;
+    codeVal.style.color       = cfg.color;
+    codeVal.style.borderColor = cfg.border;
+    codeVal.style.boxShadow   = `0 0 10px ${cfg.glow}`;
+  } else {
+    codeWrap.style.display = 'none';
+  }
+
+  okBtn.onclick = () => {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    if (typeof onClose === 'function') onClose();
+  };
+
+  overlay.classList.remove('open');
+  void overlay.offsetWidth; // reflow — reset transition
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.classList.add('open');
+}
+
+// ============================================================
+// APPLY CLOSED STATE — intercept semua link ke daftar.html
+// ============================================================
+function applyRegistrationClosed() {
+  const CLOSED_MSG =
+    'Batas akhir pendaftaran IGITA 2026 telah terlewati pada\n' +
+    '19 Agustus 2026 pukul 23:59 WIB.\n\n' +
+    'Untuk informasi lebih lanjut, hubungi panitia:\n' +
+    '• igitaofficial@gmail.com\n' +
+    '• Instagram: @igita.ibikkg';
+
+  const regLinks = document.querySelectorAll(
+    'a[href="daftar.html"], ' +
+    'a[href="daftar.html?kategori=external"], ' +
+    'a[href="daftar.html?kategori=internal"]'
+  );
+
+  regLinks.forEach(link => {
+    // Intercept klik biasa
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      showNotif({ type: 'warning', title: 'Pendaftaran Ditutup', message: CLOSED_MSG });
+    });
+    // Intercept klik tengah / buka tab baru
+    link.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
+
+    link.classList.add('reg-closed-btn');
+
+    if (link.classList.contains('nav-cta') || link.classList.contains('mobile-cta')) {
+      // Navbar & mobile nav — ganti teks dalam <span>
+      const span = link.querySelector('span');
+      if (span) span.textContent = 'Ditutup';
+      else link.textContent = 'Ditutup';
+
+    } else if (link.classList.contains('btn-primary')) {
+      // Hero & CTA section button
+      link.textContent = 'Pendaftaran Ditutup';
+
+    }
+    // Category card <a> wrappers: hanya class + interception, visual via CSS ::after
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // ============================================================
@@ -222,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       label    : 'Close Registration & Batas Proposal dalam',
-      deadline : new Date('2026-08-14T17:00:00Z'), // 14 Agu 24.00 WIB
+      deadline : new Date('2026-08-19T16:59:59Z'), // 19 Agu 23:59 WIB
     },
     {
       label    : 'Technical Meeting dalam',
@@ -237,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deadline : new Date('2026-09-22T17:00:00Z'), // 22 Sep 24.00 WIB
     },
     {
-      label    : 'Final Contest & Awarding dalam',
+      label    : 'Awarding dalam',
       deadline : new Date('2026-09-23T02:15:00Z'), // 23 Sep 09.15 WIB
     },
   ];
@@ -487,4 +620,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initParticles();
+
+  // ============================================================
+  // REGISTRATION CLOSED — aktifkan jika deadline sudah lewat
+  // ============================================================
+  if (isRegistrationClosed()) {
+    applyRegistrationClosed();
+  }
+
+  // Backdrop click untuk tutup notif modal
+  const notifOverlay = document.getElementById('igita-notif-overlay');
+  if (notifOverlay) {
+    notifOverlay.addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('open');
+        this.setAttribute('aria-hidden', 'true');
+      }
+    });
+    // Tutup dengan Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && notifOverlay.classList.contains('open')) {
+        notifOverlay.classList.remove('open');
+        notifOverlay.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
 });
