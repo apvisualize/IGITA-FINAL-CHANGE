@@ -149,11 +149,26 @@
       <span class="nav-logo-text">IGITA<span class="nav-logo-year">2026</span></span>
     </div>
     <div class="nav-links">
-      <a href="#concept">Konsep</a>
+      <a href="#concept">Tentang</a>
       <a href="#categories">Kategori</a>
       <a href="#timeline">Timeline</a>
       <a href="#rules">Ketentuan</a>
-      <a href="#contact">Kontak</a>
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-trigger" id="nav-dropdown-btn"
+                aria-expanded="false" aria-haspopup="true" type="button">
+          Lainnya
+          <svg class="nav-dropdown-chevron" width="11" height="11" viewBox="0 0 12 12"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="2 4 6 8 10 4"/>
+          </svg>
+        </button>
+        <div class="nav-dropdown-panel" id="nav-dropdown-panel" aria-hidden="true">
+          <a href="#sponsors">Sponsor</a>
+          <a href="#downloads">Dokumen</a>
+          <a href="#contact">Kontak</a>
+        </div>
+      </div>
     </div>
     <a href="daftar.html" class="nav-cta"><span>Daftar Tim</span></a>
     <button class="nav-burger" id="nav-burger" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="mobile-nav" type="button">
@@ -168,12 +183,13 @@
     <div class="mobile-nav-header" aria-hidden="true">
       <span class="mobile-nav-label">// NAVIGASI</span>
     </div>
-    <a href="#concept"><span class="nav-num">01</span>Konsep</a>
+    <a href="#concept"><span class="nav-num">01</span>Tentang</a>
     <a href="#categories"><span class="nav-num">02</span>Kategori</a>
     <a href="#timeline"><span class="nav-num">03</span>Timeline</a>
     <a href="#rules"><span class="nav-num">04</span>Ketentuan</a>
-    <a href="#downloads"><span class="nav-num">05</span>Unduhan</a>
-    <a href="#contact"><span class="nav-num">06</span>Kontak</a>
+    <a href="#sponsors"><span class="nav-num">05</span>Sponsor</a>
+    <a href="#downloads"><span class="nav-num">06</span>Dokumen</a>
+    <a href="#contact"><span class="nav-num">07</span>Kontak</a>
     <div class="mobile-nav-divider" aria-hidden="true"></div>
     <a href="daftar.html" class="mobile-cta"><span>Daftar Tim</span></a>
   </nav>
@@ -478,7 +494,7 @@
       <span class="footer-logo-text">IGITA<span class="footer-logo-year">2026</span></span>
     </div>
     <div class="footer-links">
-      <a href="#concept">Konsep</a>
+      <a href="#concept">Tentang</a>
       <a href="#categories">Kategori</a>
       <a href="#timeline">Timeline</a>
       <a href="#rules">Ketentuan</a>

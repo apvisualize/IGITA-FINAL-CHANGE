@@ -620,19 +620,41 @@
     regBody.scrollTop = 0;
   }
 
-  btnNext.addEventListener('click', () => {
+  btnNext.addEventListener('click', async () => {
     let valid = false;
     if (currentStep === 1) valid = validateStep1();
     else if (currentStep === 2) valid = validateStep2();
     else if (currentStep === 3) valid = validateStep3();
-    if (valid && currentStep < TOTAL_STEPS) {
+    if (!valid) return;
+
+    // ── QUOTA RE-CHECK saat mau lanjut dari step 1 ─────────────
+    // Dilakukan setelah pilih kategori, sebelum user mulai isi data.
+    if (currentStep === 1) {
+      btnNext.disabled = true;
+      const origText   = btnNext.textContent;
+      btnNext.textContent = 'Memeriksa kuota...';
+
+      const quotaCheck = await verifyQuotaBeforeSubmit();
+
+      btnNext.disabled = false;
+      btnNext.textContent = origText;
+
+      if (!quotaCheck.ok) {
+        alert('⚠️ Pendaftaran ditutup.\n\n' + quotaCheck.reason + '\n\nSilakan hubungi panitia untuk informasi lebih lanjut.');
+        return;
+      }
+    }
+    // ────────────────────────────────────────────────────────────
+
+    if (currentStep < TOTAL_STEPS) {
       currentStep++;
       updateStepUI();
+      saveDraft(); // simpan step terbaru
     }
   });
 
   btnBack.addEventListener('click', () => {
-    if (currentStep > 1) { currentStep--; updateStepUI(); }
+    if (currentStep > 1) { currentStep--; updateStepUI(); saveDraft(); }
   });
 
   // ============================================================
@@ -728,6 +750,25 @@
 
   confirmSend.addEventListener('click', async () => {
     confirmSend.disabled = true;
+    confirmSend.textContent = 'Memeriksa kuota...';
+
+    // ── PRE-SUBMIT QUOTA CHECK ──────────────────────────────────
+    // Re-fetch kuota langsung dari server sebelum kirim data,
+    // untuk cegah race condition (dua orang submit hampir bersamaan).
+    const quotaCheck = await verifyQuotaBeforeSubmit();
+    if (!quotaCheck.ok) {
+      confirmSend.disabled = false;
+      confirmSend.textContent = 'Kirim Sekarang ✓';
+      closeConfirmModal();
+      alert('⚠️ Pendaftaran ditutup.')
+
+' + quotaCheck.reason + '
+
+('Silakan hubungi panitia untuk informasi lebih lanjut.');
+      return;
+    }
+    // ────────────────────────────────────────────────────────────
+
     confirmSend.textContent = 'Mengirim...';
     closeConfirmModal();
 
@@ -795,9 +836,17 @@
         let berhasil = false;
         let pesanError = 'Gagal mengirim data ke server.';
 
+        // Timeout 90 detik — Apps Script butuh waktu upload file ke Drive
+        // (upload PDF + gambar bisa 30-60 detik tergantung ukuran & koneksi)
+        const SUBMIT_TIMEOUT_MS = 90000;
+        let   timedOut = false;
+
         try {
           const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 15000); // timeout 15 detik
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            controller.abort();
+          }, SUBMIT_TIMEOUT_MS);
 
           const res = await fetch(url, {
             method: 'POST',
@@ -815,22 +864,36 @@
             pesanError = 'Server menolak data: ' + (json.message || 'Unknown error');
           }
         } catch (fetchErr) {
-          if (fetchErr.name === 'AbortError') {
-            pesanError = 'Koneksi timeout (15 detik). Periksa koneksi internet kamu dan coba lagi.';
+          if (fetchErr.name === 'AbortError' && timedOut) {
+            // Timeout bukan berarti gagal — Apps Script mungkin masih proses
+            // dan data sudah masuk ke spreadsheet. Tampilkan pesan khusus
+            // dengan kode registrasi supaya user bisa konfirmasi ke panitia.
+            alert(
+              '⏱️ Koneksi lambat — respon server melebihi batas waktu.\n\n' +
+              'Data kamu kemungkinan SUDAH MASUK ke sistem.\n\n' +
+              'Catat kode registrasi berikut:\n' +
+              '👉 ' + kode + '\n\n' +
+              'Hubungi panitia dengan kode tersebut untuk konfirmasi. ' +
+              'Jangan submit ulang sebelum konfirmasi.'
+            );
+            // Anggap berhasil — tampilkan success screen dengan kode yang sama
+            berhasil = true;
           } else {
             pesanError = 'Gagal terhubung ke server. Periksa koneksi internet kamu.';
           }
         }
 
         if (!berhasil) {
-          // Tampilkan error ke user, aktifkan kembali tombol
-          alert('❌ Pendaftaran gagal.\n\n' + pesanError + '\n\nData kamu belum masuk. Silakan coba lagi atau hubungi panitia.');
+          alert('❌ Pendaftaran gagal.\n\n' + pesanError + '\n\nSilakan coba lagi atau hubungi panitia.');
           btnSubmit.classList.remove('loading');
           btnSubmit.disabled = false;
           btnBack.disabled   = false;
           return;
         }
       }
+
+      // Submit berhasil — hapus draft tersimpan
+      clearDraft();
 
       // Tampilkan success screen
       document.getElementById('success-code').textContent = kode;
@@ -913,101 +976,275 @@
   }
 
   // ============================================================
-  // QUOTA CHECK — Auto-disable form jika kuota per kategori penuh
+  // QUOTA CHECK — Auto-disable form jika kuota TOTAL penuh
+  // Kuota global: internal + external ≤ 20 tim (tidak ada batas per kategori)
   // ============================================================
-  const QUOTA_MAX = 10;
+  const TOTAL_QUOTA_MAX = 20;
 
   /**
-   * updateQuotaDisplay — update UI per kategori
-   * @param {'internal'|'external'} category
-   * @param {number} count  -1 = gagal fetch (fallback text)
+   * updateQuotaDisplay — update UI kedua kartu berdasarkan kuota TOTAL
+   * @param {number} internalCount  jumlah tim internal terdaftar (-1 = gagal fetch)
+   * @param {number} externalCount  jumlah tim external terdaftar (-1 = gagal fetch)
    */
-  function updateQuotaDisplay(category, count) {
-    const card   = document.getElementById('card-' + category);
-    const radio  = document.getElementById('radio-' + category);
-    const infoEl = document.getElementById('quota-info-' + category);
-    if (!card) return;
+  function updateQuotaDisplay(internalCount, externalCount) {
+    const fetchFailed = internalCount < 0 || externalCount < 0;
+    const totalUsed   = fetchFailed ? 0 : (internalCount + externalCount);
+    const totalFull   = !fetchFailed && totalUsed >= TOTAL_QUOTA_MAX;
+    const slotsLeft   = Math.max(0, TOTAL_QUOTA_MAX - totalUsed);
 
-    // Stop loading animation
-    if (infoEl) infoEl.classList.remove('loading');
+    ['internal', 'external'].forEach(function(category) {
+      const card   = document.getElementById('card-' + category);
+      const radio  = document.getElementById('radio-' + category);
+      const infoEl = document.getElementById('quota-info-' + category);
+      if (!card) return;
 
-    // Fetch gagal → tampilkan teks fallback, jangan disable apapun
-    if (count < 0) {
-      if (infoEl) infoEl.textContent = 'Kuota terbatas';
-      return;
-    }
+      // Stop loading animation
+      if (infoEl) infoEl.classList.remove('loading');
 
-    const isFull = count >= QUOTA_MAX;
-    const used   = Math.min(count, QUOTA_MAX);
-
-    // Counter text
-    if (infoEl) {
-      infoEl.textContent = isFull
-        ? QUOTA_MAX + '/' + QUOTA_MAX + ' Tim · Kuota habis'
-        : used + '/' + QUOTA_MAX + ' Tim terdaftar · ' + (QUOTA_MAX - used) + ' slot tersisa';
-      infoEl.classList.toggle('full', isFull);
-    }
-
-    if (isFull) {
-      card.classList.add('quota-full');
-      card.setAttribute('aria-disabled', 'true');
-      if (radio) {
-        if (radio.checked) { radio.checked = false; }
-        radio.disabled = true;
+      // Fetch gagal → tampilkan teks fallback, jangan disable apapun
+      if (fetchFailed) {
+        if (infoEl) infoEl.textContent = 'Kuota terbatas';
+        return;
       }
-      // Tambah badge "KUOTA PENUH" jika belum ada
-      if (!card.querySelector('.quota-full-badge')) {
-        const badge = document.createElement('div');
-        badge.className = 'quota-full-badge';
-        badge.innerHTML =
-          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
-          ' stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg> KUOTA PENUH';
-        const bar = card.querySelector('.cat-card-quota-bar');
-        if (bar) card.insertBefore(badge, bar);
-        else card.appendChild(badge);
+
+      // Counter text — cukup tampilkan status kuota, tanpa angka pendaftar
+      if (infoEl) {
+        infoEl.textContent = totalFull ? 'Kuota habis' : 'Kuota terbatas';
+        infoEl.classList.toggle('full', totalFull);
       }
-    } else {
-      card.classList.remove('quota-full');
-      card.removeAttribute('aria-disabled');
-      if (radio) radio.disabled = false;
-      const badge = card.querySelector('.quota-full-badge');
-      if (badge) badge.remove();
+
+      if (totalFull) {
+        card.classList.add('quota-full');
+        card.setAttribute('aria-disabled', 'true');
+        if (radio) {
+          if (radio.checked) { radio.checked = false; }
+          radio.disabled = true;
+        }
+        // Tambah badge "KUOTA PENUH" jika belum ada
+        if (!card.querySelector('.quota-full-badge')) {
+          const badge = document.createElement('div');
+          badge.className = 'quota-full-badge';
+          badge.innerHTML =
+            '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+            ' stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg> KUOTA PENUH';
+          const bar = card.querySelector('.cat-card-quota-bar');
+          if (bar) card.insertBefore(badge, bar);
+          else card.appendChild(badge);
+        }
+      } else {
+        card.classList.remove('quota-full');
+        card.removeAttribute('aria-disabled');
+        if (radio) radio.disabled = false;
+        const badge = card.querySelector('.quota-full-badge');
+        if (badge) badge.remove();
+      }
+    });
+  }
+
+  /**
+   * fetchQuotaCount — ambil data kuota dari Apps Script, return { internal, external }.
+   * Throw jika gagal / response tidak valid.
+   * Dipakai oleh checkQuota() (display) dan pre-submit re-check.
+   */
+  async function fetchQuotaCount() {
+    const url = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : '';
+    if (!url) throw new Error('APPS_SCRIPT_URL tidak terdefinisi');
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(url + '?action=checkQuota', {
+      method: 'GET',
+      mode: 'cors',
+      signal: controller.signal,
+    });
+    clearTimeout(t);
+    const data = await res.json();
+    if (typeof data.internal !== 'number' || typeof data.external !== 'number') {
+      throw new Error('unexpected quota response');
+    }
+    return { internal: data.internal, external: data.external };
+  }
+
+  /**
+   * checkQuota — fetch dan update tampilan kuota di kartu kategori.
+   * Dipanggil saat halaman dimuat.
+   */
+  async function checkQuota() {
+    try {
+      const { internal, external } = await fetchQuotaCount();
+      updateQuotaDisplay(internal, external);
+    } catch (err) {
+      console.warn('[IGITA] Quota check failed:', err.message);
+      updateQuotaDisplay(-1, -1);
     }
   }
 
   /**
-   * checkQuota — fetch jumlah pendaftar dari Apps Script
-   * Apps Script perlu doGet() yang menerima ?action=getQuota dan return:
-   *   { "status": "ok", "internal": N, "external": M }
+   * verifyQuotaBeforeSubmit — re-check kuota langsung ke server sesaat sebelum submit.
+   * Return { ok: true } jika masih ada slot, { ok: false, reason } jika sudah penuh.
+   * Jika jaringan gagal → izinkan lanjut (jangan block user karena masalah koneksi).
    */
-  async function checkQuota() {
-    const url = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : '';
-    if (!url) {
-      updateQuotaDisplay('internal', -1);
-      updateQuotaDisplay('external', -1);
+  async function verifyQuotaBeforeSubmit() {
+    try {
+      const { internal, external } = await fetchQuotaCount();
+      const total = internal + external;
+      updateQuotaDisplay(internal, external);
+      if (total >= TOTAL_QUOTA_MAX) {
+        return { ok: false, reason: 'Kuota pendaftaran sudah penuh (' + total + '/' + TOTAL_QUOTA_MAX + ' tim).' };
+      }
+      return { ok: true };
+    } catch (err) {
+      console.warn('[IGITA] Pre-submit quota check failed:', err.message);
+      return { ok: true, warn: true }; // fallback: tetap izinkan submit
+    }
+  }
+
+
+  // ============================================================
+  // DRAFT AUTO-SAVE — localStorage persistence antar sesi
+  // Semua teks tersimpan otomatis; file upload perlu ulang.
+  // Draft kadaluarsa otomatis setelah 24 jam.
+  // ============================================================
+  const DRAFT_KEY = 'igita2026_reg_draft';
+
+  const DRAFT_TEXT_FIELDS = [
+    'nama-tim', 'asal-institusi',
+    'm1-nama', 'm1-email', 'm1-hp', 'm1-ig', 'm1-jurusan',
+    'm2-nama', 'm2-email', 'm2-hp', 'm2-ig', 'm2-jurusan',
+    'm3-nama', 'm3-jurusan',
+    'm4-nama', 'm4-jurusan',
+    'link-ig-post',
+  ];
+
+  /** Simpan semua field + step ke localStorage */
+  function saveDraft() {
+    try {
+      const draft = {
+        savedAt : Date.now(),
+        step    : currentStep,
+        kategori: document.querySelector('input[name="kategori"]:checked')?.value || '',
+        agree   : document.getElementById('agree-check')?.checked || false,
+      };
+      DRAFT_TEXT_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) draft[id] = el.value;
+      });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) { /* localStorage disabled — abaikan */ }
+  }
+
+  /** Baca draft dari localStorage; return null jika tidak ada / rusak */
+  function loadDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  /** Hapus draft — dipanggil setelah submit berhasil */
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+
+  /** Isi semua form field dari data draft */
+  function applyDraft(draft) {
+    // Restore kategori via card.click() supaya side-effects jalan
+    // (jurusan rows visibility, selected class, radio state, dll)
+    if (draft.kategori === 'internal' || draft.kategori === 'external') {
+      const card = document.getElementById('card-' + draft.kategori);
+      if (card) card.click();
+    }
+    // Restore semua text field
+    DRAFT_TEXT_FIELDS.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el && draft[id] !== undefined && draft[id] !== '') {
+        el.value = draft[id];
+        // Trigger input event supaya valid/error class ikut update
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    // Restore checkbox agree
+    const agreeCheck = document.getElementById('agree-check');
+    if (agreeCheck && draft.agree) agreeCheck.checked = true;
+    // Restore step — langsung buka step terakhir yang diisi
+    if (draft.step && draft.step >= 1 && draft.step <= TOTAL_STEPS) {
+      currentStep = draft.step;
+      updateStepUI();
+    }
+  }
+
+  /** Pasang auto-save listener ke semua field */
+  function initDraftAutoSave() {
+    DRAFT_TEXT_FIELDS.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', saveDraft);
+    });
+    document.querySelectorAll('input[name="kategori"]').forEach(function(r) {
+      r.addEventListener('change', saveDraft);
+    });
+    const agree = document.getElementById('agree-check');
+    if (agree) agree.addEventListener('change', saveDraft);
+  }
+
+  /** Tampilkan banner "Draft ditemukan" di atas form */
+  function showDraftBanner(draft) {
+    const banner = document.createElement('div');
+    banner.id        = 'draft-banner';
+    banner.className = 'draft-banner';
+
+    const stepStr = (draft.step && draft.step > 1)
+      ? 'Terakhir di step ' + draft.step + ' dari ' + TOTAL_STEPS
+      : 'Mulai dari step 1';
+
+    const timeStr = draft.savedAt
+      ? ' &middot; ' + new Date(draft.savedAt).toLocaleString('id-ID', {
+          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        })
+      : '';
+
+    banner.innerHTML =
+      '<div class="draft-banner-icon">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+        ' stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' +
+          '<polyline points="14 2 14 8 20 8"/>' +
+          '<line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="draft-banner-text">' +
+        '<strong>Draft ditemukan' + timeStr + '</strong>' +
+        '<span>' + stepStr + ' &middot; File upload perlu diunggah ulang</span>' +
+      '</div>' +
+      '<div class="draft-banner-actions">' +
+        '<button id="draft-restore-btn" class="draft-btn-restore">Lanjutkan</button>' +
+        '<button id="draft-clear-btn"   class="draft-btn-clear">Mulai Baru</button>' +
+      '</div>';
+
+    const regBody = document.querySelector('.reg-body');
+    if (regBody) regBody.insertAdjacentElement('afterbegin', banner);
+
+    document.getElementById('draft-restore-btn').addEventListener('click', function() {
+      banner.remove();
+      applyDraft(draft);
+    });
+    document.getElementById('draft-clear-btn').addEventListener('click', function() {
+      clearDraft();
+      banner.remove();
+    });
+  }
+
+  /** Cek localStorage saat load; tampilkan banner jika ada draft valid */
+  function initDraftRestore() {
+    const draft = loadDraft();
+    if (!draft) return;
+    // Draft > 24 jam → hapus otomatis
+    if (draft.savedAt && Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
+      clearDraft();
       return;
     }
-    try {
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(url + '?action=checkQuota', {
-        method: 'GET',
-        mode: 'cors',
-        signal: controller.signal,
-      });
-      clearTimeout(t);
-      const data = await res.json();
-      if (typeof data.internal === 'number' && typeof data.external === 'number') {
-        updateQuotaDisplay('internal', data.internal);
-        updateQuotaDisplay('external', data.external);
-      } else {
-        throw new Error('unexpected quota response');
-      }
-    } catch (err) {
-      console.warn('[IGITA] Quota check failed:', err.message);
-      updateQuotaDisplay('internal', -1);
-      updateQuotaDisplay('external', -1);
-    }
+    // Hanya restore kalau ada data bermakna
+    const hasData = draft.kategori || draft['nama-tim'] || draft['m1-nama'];
+    if (!hasData) { clearDraft(); return; }
+    showDraftBanner(draft);
   }
 
   // ============================================================
@@ -1016,7 +1253,9 @@
   initInputSetup();
   injectStepSVGs();
   updateStepUI();
-  checkQuota(); // cek kuota saat halaman dimuat
+  checkQuota();        // cek kuota saat halaman dimuat
+  initDraftAutoSave(); // pasang auto-save listener ke semua field
+  initDraftRestore();  // cek & tampilkan banner jika ada draft tersimpan
 
   // File upload nama file display
   // proposal file name display handled by setupProposalInput

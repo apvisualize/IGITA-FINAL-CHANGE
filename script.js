@@ -166,6 +166,50 @@ document.addEventListener('DOMContentLoaded', () => {
   if (backdrop) backdrop.addEventListener('click', closeMenu);
 
   // ============================================================
+  // DESKTOP DROPDOWN "LAINNYA"
+  // ============================================================
+  const dropBtn   = document.getElementById('nav-dropdown-btn');
+  const dropPanel = document.getElementById('nav-dropdown-panel');
+
+  function openDropdown() {
+    dropBtn.setAttribute('aria-expanded', 'true');
+    dropPanel.classList.add('open');
+    dropPanel.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeDropdown() {
+    dropBtn.setAttribute('aria-expanded', 'false');
+    dropPanel.classList.remove('open');
+    dropPanel.setAttribute('aria-hidden', 'true');
+  }
+
+  if (dropBtn && dropPanel) {
+    dropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropBtn.getAttribute('aria-expanded') === 'true' ? closeDropdown() : openDropdown();
+    });
+
+    dropPanel.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', closeDropdown);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropBtn.contains(e.target) && !dropPanel.contains(e.target)) {
+        closeDropdown();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dropBtn.getAttribute('aria-expanded') === 'true') {
+        closeDropdown();
+        dropBtn.focus();
+      }
+    });
+
+    burger.addEventListener('click', closeDropdown);
+  }
+
+  // ============================================================
   // COUNTDOWN — Otomatis berganti target sesuai fase IGITA 2026
   // Semua waktu dalam UTC (WIB = UTC+7, jadi jam 08.00 WIB = 01.00 UTC)
   // ============================================================
