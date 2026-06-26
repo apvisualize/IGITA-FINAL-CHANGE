@@ -385,11 +385,6 @@
         <div class="step-connector" id="conn-2-3"></div>
         <div class="reg-step" data-step="3">
           <div class="step-num"><span class="step-num-txt">3</span></div>
-          <div class="step-label">Proposal &amp; IG</div>
-        </div>
-        <div class="step-connector" id="conn-3-4"></div>
-        <div class="reg-step" data-step="4">
-          <div class="step-num"><span class="step-num-txt">4</span></div>
           <div class="step-label">Pembayaran</div>
         </div>
       </div>
@@ -494,9 +489,10 @@
                 <div class="form-error" id="err-m1-hp">Nomor HP wajib diisi.</div>
               </div>
               <div class="form-group">
-                <label class="form-label" for="m1-ig">User Instagram <span class="req">*</span></label>
-                <input type="text" class="form-input" id="m1-ig" placeholder="@username (untuk Twibbon)">
-                <div class="form-error" id="err-m1-ig">User Instagram wajib diisi.</div>
+                <label class="form-label" for="m1-twibbon">Link Post Twibbon <span class="req">*</span></label>
+                <input type="url" class="form-input" id="m1-twibbon" placeholder="https://www.instagram.com/p/..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                <div class="form-helper">Link postingan Instagram setelah upload foto twibbon IGITA 2026.</div>
+                <div class="form-error" id="err-m1-twibbon">Link twibbon wajib diisi.</div>
               </div>
             </div>
             <div class="form-row single jurusan-row" style="display:none">
@@ -525,16 +521,11 @@
                 <div class="form-error" id="err-m2-email">Email valid wajib diisi.</div>
               </div>
             </div>
-            <div class="form-row">
+            <div class="form-row single">
               <div class="form-group">
                 <label class="form-label" for="m2-hp">No. HP / WA <span class="req">*</span></label>
                 <input type="tel" class="form-input" id="m2-hp" placeholder="08xxxxxxxxxx">
                 <div class="form-error" id="err-m2-hp">Nomor HP wajib diisi.</div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="m2-ig">User Instagram <span class="req">*</span></label>
-                <input type="text" class="form-input" id="m2-ig" placeholder="@username (untuk Twibbon)">
-                <div class="form-error" id="err-m2-ig">User Instagram wajib diisi.</div>
               </div>
             </div>
             <div class="form-row single jurusan-row" style="display:none">
@@ -589,75 +580,11 @@
           </div>
         </div>
 
-        <!-- STEP 3: Proposal -->
+        <!-- STEP 3: Pembayaran -->
         <div class="reg-panel" id="panel-3">
-          <div class="form-sec-label no-top">Berkas Proposal</div>
-          <div class="form-section-title">
-            <span class="sec-num">04</span>
-            <span class="sec-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            </span>
-            Upload <em>Proposal</em>
-          </div>
-
-          <div class="quota-info">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-            <div class="quota-info-text">Upload proposal timmu dalam format <strong>PDF</strong>. Gunakan template proposal resmi IGITA 2026 yang bisa diunduh di halaman utama. Pastikan proposal sudah lengkap sebelum dikirim.</div>
-          </div>
-
-          <div class="form-row single">
-            <div class="form-group">
-              <label class="form-label" for="proposal-file">File Proposal (PDF) <span class="req">*</span></label>
-              <div class="file-upload-wrap" id="file-upload-zone">
-                <input type="file" id="proposal-file" accept="application/pdf" class="file-input-hidden">
-                <div class="file-upload-icon" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                </div>
-                <div class="file-upload-meta">
-                  <div class="file-upload-hint">Seret file ke sini atau pilih file PDF</div>
-                  <span class="file-upload-name" id="proposal-file-name">Belum ada file dipilih</span>
-                </div>
-                <label for="proposal-file" class="file-upload-btn">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Pilih File
-                </label>
-              </div>
-              <div class="form-helper">Format: PDF · Maks. 10MB · Gunakan template proposal resmi IGITA 2026.</div>
-              <div class="form-error" id="err-proposal-file">File proposal wajib diunggah.</div>
-            </div>
-          </div>
-
-          <!-- Link Instagram Twibbon -->
-          <div class="form-sec-label">Verifikasi Twibbon</div>
-          <div class="form-section-title">
-            <span class="sec-num">05</span>
-            <span class="sec-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="#00d4ff" stroke="none"/></svg>
-            </span>
-            Link <em>Instagram</em>
-          </div>
-
-          <div class="quota-info">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-            <div class="quota-info-text">Berikan <strong>link profil Instagram</strong> yang digunakan untuk posting Twibbon IGITA 2026. Panitia akan memverifikasi twibbon kamu melalui akun tersebut. Pastikan akun tidak dikunci <strong>(public)</strong> saat pendaftaran.</div>
-          </div>
-
-          <div class="form-row single">
-            <div class="form-group">
-              <label class="form-label" for="link-ig-post">Link Profil Instagram <span class="req">*</span></label>
-              <input type="url" class="form-input" id="link-ig-post" placeholder="https://www.instagram.com/username" autocomplete="off" autocapitalize="off" spellcheck="false">
-              <div class="form-helper">Contoh: https://www.instagram.com/namaakun</div>
-              <div class="form-error" id="err-link-ig">Link profil Instagram wajib diisi.</div>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- STEP 4: Pembayaran -->
-        <div class="reg-panel" id="panel-4">
           <div class="form-sec-label no-top">Pembayaran Pendaftaran</div>
           <div class="form-section-title">
-            <span class="sec-num">06</span>
+            <span class="sec-num">04</span>
             <span class="sec-icon">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 7h.01M12 7h5M7 12h.01M12 12h3M7 17h.01M12 17h2"/></svg>
             </span>
@@ -683,7 +610,7 @@
 
           <div class="form-sec-label">Bukti Pembayaran</div>
           <div class="form-section-title">
-            <span class="sec-num">07</span>
+            <span class="sec-num">05</span>
             <span class="sec-icon">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </span>
@@ -714,7 +641,7 @@
 
           <div class="form-sec-label">Konfirmasi &amp; Kirim</div>
           <div class="form-section-title">
-            <span class="sec-num">08</span>
+            <span class="sec-num">06</span>
             <span class="sec-icon">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </span>
@@ -787,7 +714,7 @@
 
       <!-- Footer Nav -->
       <div class="reg-footer" id="reg-footer">
-        <div class="reg-footer-left" id="step-indicator-text">Langkah 1 dari 4</div>
+        <div class="reg-footer-left" id="step-indicator-text">Langkah 1 dari 3</div>
         <div class="reg-footer-right">
           <button class="btn-reg-back" id="btn-back" style="display:none">← Kembali</button>
           <button class="btn-reg-next" id="btn-next">Lanjut →</button>
@@ -817,9 +744,7 @@
         <div class="confirm-section-label" style="margin-top:16px">// Anggota Tim</div>
         <div id="cf-members"></div>
 
-        <div class="confirm-section-label" style="margin-top:16px">// Proposal &amp; Pembayaran</div>
-        <div class="confirm-row"><span class="confirm-key">File Proposal</span><span class="confirm-val" id="cf-file">—</span></div>
-        <div class="confirm-row"><span class="confirm-key">Link IG Twibbon</span><span class="confirm-val" id="cf-link-ig">—</span></div>
+        <div class="confirm-section-label" style="margin-top:16px">// Pembayaran</div>
         <div class="confirm-row"><span class="confirm-key">Bukti Bayar</span><span class="confirm-val" id="cf-bukti-bayar">—</span></div>
       </div>
       <div class="confirm-footer">
@@ -847,7 +772,7 @@
 
       /* ── Progress bar sync ── */
       const progressFill = document.getElementById('reg-progress-fill');
-      const totalSteps   = 4;
+      const totalSteps   = 3;
 
       function syncProgress(step) {
         if (!progressFill) return;
@@ -864,23 +789,6 @@
         mo.observe(stepText, { childList: true, subtree: true, characterData: true });
       }
       syncProgress(1);
-
-      /* ── Drag-and-drop on file zone (Proposal) ── */
-      const zone = document.getElementById('file-upload-zone');
-      const fileInput = document.getElementById('proposal-file');
-      if (zone && fileInput) {
-        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-        zone.addEventListener('drop', e => {
-          e.preventDefault(); zone.classList.remove('drag-over');
-          const file = e.dataTransfer.files[0];
-          if (file) {
-            const dt = new DataTransfer(); dt.items.add(file);
-            fileInput.files = dt.files;
-            fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        });
-      }
 
       /* ── Bukti bayar file name display ── */
       const buktiInput = document.getElementById('bukti-bayar');

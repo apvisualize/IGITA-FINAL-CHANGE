@@ -229,6 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
       deadline : new Date('2026-08-20T11:30:00Z'), // 20 Agu 18.30 WIB
     },
     {
+      label    : 'Batas Pengumpulan Proposal dalam',
+      deadline : new Date('2026-09-10T17:00:00Z'), // 10 Sep 24.00 WIB
+    },
+    {
       label    : 'Pre Event berakhir dalam',
       deadline : new Date('2026-09-22T17:00:00Z'), // 22 Sep 24.00 WIB
     },

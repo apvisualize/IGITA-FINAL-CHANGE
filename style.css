@@ -4192,3 +4192,296 @@ body.reg-page .reg-close { display: none !important; }
   .draft-banner       { flex-wrap: wrap; gap: 10px; }
   .draft-banner-actions { width: 100%; justify-content: flex-end; }
 }
+/* ============================================================
+   IGITA 2026 — PREMIUM NOTIFICATION MODAL
+   Menggantikan native browser alert() dengan UI kustom premium
+   ============================================================ */
+
+/* ── Overlay ─────────────────────────────────────────────────── */
+#igita-notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 4, 8, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity       0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    background    0.28s ease,
+    backdrop-filter 0.28s ease;
+}
+
+#igita-notif-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(2, 4, 8, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Modal container ─────────────────────────────────────────── */
+.igita-notif-modal {
+  position: relative;
+  width: min(440px, 100%);
+  background: linear-gradient(150deg, #080f1e 0%, #040a14 100%);
+  border: 1px solid rgba(0, 136, 255, 0.14);
+  border-radius: 18px;
+  padding: 0;
+  overflow: hidden;
+  transform: scale(0.88) translateY(20px);
+  transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 32px 80px rgba(0, 0, 0, 0.65),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+#igita-notif-overlay.open .igita-notif-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* ── Inner padding container ─────────────────────────────────── */
+.igita-notif-modal > .notif-icon-ring,
+.igita-notif-modal > .notif-type-label,
+.igita-notif-modal > .notif-title-el,
+.igita-notif-modal > .notif-message-el,
+.igita-notif-modal > .notif-code-wrap,
+.igita-notif-modal > .notif-ok-btn {
+  display: block;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* ── Top accent bar ──────────────────────────────────────────── */
+.notif-accent-bar {
+  height: 2px;
+  width: 100%;
+  position: relative;
+}
+
+/* ── Background grid (subtle) ────────────────────────────────── */
+.notif-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 136, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 136, 255, 0.025) 1px, transparent 1px);
+  background-size: 38px 38px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Ambient glow orb ────────────────────────────────────────── */
+.notif-glow-orb {
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.3s ease;
+}
+
+/* ── Ensure children above pseudo layers ─────────────────────── */
+.notif-icon-ring,
+.notif-type-label,
+.notif-title-el,
+.notif-message-el,
+.notif-code-wrap,
+.notif-ok-btn {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Icon ring ───────────────────────────────────────────────── */
+.notif-icon-ring {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 36px 0 0 32px;
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.notif-icon-ring span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+/* ── Type label ──────────────────────────────────────────────── */
+.notif-type-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  margin-top: 20px;
+  margin-bottom: 6px;
+  padding-left: 32px;
+  padding-right: 32px;
+  transition: color 0.3s ease;
+}
+
+/* ── Title ───────────────────────────────────────────────────── */
+.notif-title-el {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #eef2ff;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* ── Message ─────────────────────────────────────────────────── */
+.notif-message-el {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  color: #7c8db5;
+  line-height: 1.65;
+  margin-bottom: 24px;
+  white-space: pre-line;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* ── Code block (timeout only) ───────────────────────────────── */
+.notif-code-wrap {
+  margin: 0 32px 24px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 136, 255, 0.1);
+  display: none;
+}
+
+.notif-code-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: #5a6d8a;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.notif-code-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 10px 14px;
+  border-radius: 7px;
+  border: 1px solid;
+  background: rgba(0, 0, 0, 0.25);
+  text-align: center;
+  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* ── OK button ───────────────────────────────────────────────── */
+.notif-ok-btn {
+  display: block;
+  width: calc(100% - 64px);
+  margin: 0 32px 32px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform   0.18s ease,
+    filter      0.18s ease,
+    box-shadow  0.3s ease;
+}
+
+.notif-ok-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background 0.2s ease;
+}
+
+.notif-ok-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.notif-ok-btn:hover::before {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notif-ok-btn:active {
+  transform: scale(0.98) translateY(0);
+}
+
+/* ── Separator above button ──────────────────────────────────── */
+.notif-ok-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .igita-notif-modal {
+    border-radius: 16px;
+  }
+
+  .notif-icon-ring {
+    width: 58px;
+    height: 58px;
+    margin-top: 28px;
+    margin-left: 24px;
+  }
+
+  .notif-type-label,
+  .notif-title-el,
+  .notif-message-el {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .notif-title-el {
+    font-size: 1.15rem;
+  }
+
+  .notif-message-el {
+    font-size: 0.84rem;
+  }
+
+  .notif-code-wrap {
+    margin-left: 24px;
+    margin-right: 24px;
+  }
+
+  .notif-ok-btn {
+    width: calc(100% - 48px);
+    margin-left: 24px;
+    margin-right: 24px;
+    margin-bottom: 24px;
+    padding: 13px;
+  }
+}

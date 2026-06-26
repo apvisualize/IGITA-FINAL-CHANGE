@@ -13,7 +13,7 @@
   const stepText  = document.getElementById('step-indicator-text');
 
   let currentStep = 1;
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 3;
 
   // ============================================================
   // ATURAN VALIDASI
@@ -42,9 +42,10 @@
     return VALID_EMAIL_DOMAINS.includes(domain);
   }
 
-  // Instagram: wajib diawali @, min 4 karakter total, hanya huruf/angka/titik/underscore
-  function isValidIG(v) {
-    return /^@[a-zA-Z0-9._]{1,}$/.test(v.trim()) && v.trim().length >= 4;
+  // Twibbon link: harus URL instagram yang valid (post/reel/foto)
+  function isValidTwibbonLink(v) {
+    const val = v.trim();
+    return /^https?:\/\/(www\.)?instagram\.com\/.+/.test(val);
   }
 
   // Nama: min 3 karakter, hanya huruf & spasi (tidak boleh angka/simbol)
@@ -55,12 +56,6 @@
   // Nama Tim: min 3 karakter, bebas
   function isValidNamaTim(v) {
     return v.trim().length >= 3;
-  }
-
-  // Link IG: harus URL instagram yang valid
-  function isValidLinkIG(v) {
-    const val = v.trim();
-    return /^https?:\/\/(www\.)?instagram\.com\/.+/.test(val);
   }
 
   // File: jpg/png/pdf, max 2MB
@@ -79,7 +74,7 @@
     nama    : 'Nama harus min. 3 huruf, tidak boleh mengandung angka atau simbol.',
     email   : 'Email tidak valid. Gunakan Gmail, Yahoo, Outlook, atau email kampus.',
     hp      : 'No. HP harus diawali 08 dan terdiri dari 10–13 digit.',
-    ig      : 'Akun Instagram harus diawali @ (contoh: @namaakun).',
+    twibbon : 'Link twibbon tidak valid. Contoh: https://www.instagram.com/p/xxxxx',
     namaTim : 'Nama tim minimal 3 karakter.',
     institusi: 'Asal sekolah/institusi wajib diisi (min. 3 karakter).',
   };
@@ -102,6 +97,116 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.toggle('valid', isOk);
+  }
+
+
+  // ============================================================
+  // PREMIUM NOTIFICATION MODAL — replaces native alert()
+  // ============================================================
+  function showNotif({ type = 'info', title, message, code = null, onClose = null } = {}) {
+    const CONFIGS = {
+      warning: {
+        color : '#f59e0b',
+        glow  : 'rgba(245,158,11,0.22)',
+        border: 'rgba(245,158,11,0.35)',
+        label : '// PERINGATAN',
+        icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+      },
+      error: {
+        color : '#ef4444',
+        glow  : 'rgba(239,68,68,0.22)',
+        border: 'rgba(239,68,68,0.35)',
+        label : '// ERROR',
+        icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+      },
+      timeout: {
+        color : '#00d4ff',
+        glow  : 'rgba(0,212,255,0.22)',
+        border: 'rgba(0,212,255,0.35)',
+        label : '// PERHATIAN',
+        icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+      },
+      info: {
+        color : '#00d4ff',
+        glow  : 'rgba(0,212,255,0.22)',
+        border: 'rgba(0,212,255,0.35)',
+        label : '// INFO',
+        icon  : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      },
+    };
+    const cfg = CONFIGS[type] || CONFIGS.info;
+
+    // Build overlay once, reuse on repeat calls
+    let overlay = document.getElementById('igita-notif-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'igita-notif-overlay';
+      overlay.innerHTML = `
+        <div class="igita-notif-modal" id="igita-notif-modal">
+          <div class="notif-accent-bar"  id="notif-accent-bar"></div>
+          <div class="notif-bg-grid"></div>
+          <div class="notif-glow-orb"   id="notif-glow-orb"></div>
+          <div class="notif-icon-ring"  id="notif-icon-ring">
+            <span id="notif-icon-inner"></span>
+          </div>
+          <div class="notif-type-label" id="notif-type-label"></div>
+          <div class="notif-title-el"   id="notif-title-el"></div>
+          <div class="notif-message-el" id="notif-message-el"></div>
+          <div class="notif-code-wrap"  id="notif-code-wrap">
+            <div class="notif-code-label">// Kode Registrasi — Simpan dan hubungi panitia</div>
+            <div class="notif-code-val" id="notif-code-val"></div>
+          </div>
+          <button class="notif-ok-btn"  id="notif-ok-btn">OK</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    const accentBar = document.getElementById('notif-accent-bar');
+    const glowOrb   = document.getElementById('notif-glow-orb');
+    const iconRing  = document.getElementById('notif-icon-ring');
+    const iconInner = document.getElementById('notif-icon-inner');
+    const typeLabel = document.getElementById('notif-type-label');
+    const titleEl   = document.getElementById('notif-title-el');
+    const msgEl     = document.getElementById('notif-message-el');
+    const codeWrap  = document.getElementById('notif-code-wrap');
+    const codeVal   = document.getElementById('notif-code-val');
+    const okBtn     = document.getElementById('notif-ok-btn');
+
+    accentBar.style.background = `linear-gradient(90deg, ${cfg.color} 0%, transparent 80%)`;
+    glowOrb.style.background   = `radial-gradient(circle, ${cfg.glow} 0%, transparent 70%)`;
+    iconRing.style.borderColor = cfg.border;
+    iconRing.style.boxShadow   = `0 0 24px ${cfg.glow}, inset 0 0 14px ${cfg.glow}`;
+    iconInner.style.color      = cfg.color;
+    iconInner.innerHTML        = cfg.icon;
+    typeLabel.textContent      = cfg.label;
+    typeLabel.style.color      = cfg.color;
+    titleEl.textContent        = title || '';
+    msgEl.textContent          = message || '';
+    okBtn.style.background     = `linear-gradient(135deg, ${cfg.glow}, rgba(0,0,0,0.2))`;
+    okBtn.style.borderColor    = cfg.border;
+    okBtn.style.boxShadow      = `0 0 18px ${cfg.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`;
+    okBtn.style.color          = cfg.color;
+
+    if (code) {
+      codeWrap.style.display = 'block';
+      codeVal.textContent    = code;
+      codeVal.style.color    = cfg.color;
+      codeVal.style.borderColor = cfg.border;
+      codeVal.style.boxShadow   = `0 0 10px ${cfg.glow}`;
+    } else {
+      codeWrap.style.display = 'none';
+    }
+
+    okBtn.onclick = () => {
+      overlay.classList.remove('open');
+      if (typeof onClose === 'function') onClose();
+    };
+
+    // Trigger reflow for animation
+    overlay.classList.remove('open');
+    void overlay.offsetWidth;
+    overlay.classList.add('open');
   }
 
   // ============================================================
@@ -137,23 +242,18 @@
     });
   }
 
-  // Auto-format IG: otomatis tambahkan @ di depan jika belum ada
-  function setupIGInput(id) {
+  // Setup validasi real-time link twibbon (hanya untuk Ketua)
+  function setupTwibbonInput(id) {
     const el = document.getElementById(id);
     if (!el) return;
     el.setAttribute('autocorrect', 'off');
     el.setAttribute('autocapitalize', 'off');
     el.setAttribute('spellcheck', 'false');
-
     el.addEventListener('blur', () => {
-      let val = el.value.trim();
-      if (val.length > 0 && !val.startsWith('@')) {
-        val = '@' + val;
-        el.value = val;
-      }
+      const val = el.value.trim();
       if (val.length > 0) {
-        const valid = isValidIG(val);
-        showErr('err-' + id, !valid, valid ? '' : ERR_MSG.ig);
+        const valid = isValidTwibbonLink(val);
+        showErr('err-' + id, !valid, valid ? '' : ERR_MSG.twibbon);
         setInputErr(id, !valid);
         setInputOk(id, valid);
       }
@@ -191,79 +291,21 @@
     });
   }
 
-  // File proposal feedback
-  function isValidProposal(file) {
-    if (!file) return { ok: false, msg: 'File proposal wajib diunggah.' };
-    if (file.type !== 'application/pdf') return { ok: false, msg: 'Format file tidak valid. Gunakan PDF.' };
-    if (file.size > 10 * 1024 * 1024) return { ok: false, msg: 'Ukuran file melebihi 10MB. Kompres atau pilih file lain.' };
-    return { ok: true };
-  }
-
-  function setupProposalInput() {
-    const fileInput = document.getElementById('proposal-file');
-    const nameDisp  = document.getElementById('proposal-file-name');
-    const helper    = fileInput?.closest('.form-group')?.querySelector('.form-helper');
-    if (!fileInput) return;
-    fileInput.addEventListener('change', () => {
-      const file   = fileInput.files[0];
-      const result = isValidProposal(file);
-      // Truncate long names for display (max 40 chars)
-      const shortName = file
-        ? (file.name.length > 40 ? file.name.slice(0, 37) + '…' : file.name)
-        : 'Belum ada file dipilih';
-      if (nameDisp) {
-        nameDisp.textContent = shortName;
-        nameDisp.classList.toggle('has-file', !!file);
-      }
-      if (!result.ok) {
-        showErr('err-proposal-file', true, result.msg);
-        setInputErr('proposal-file', true);
-        if (helper) { helper.textContent = 'Format: PDF · Maks. 10MB.'; helper.style.color = ''; }
-        fileInput.value = '';
-        if (nameDisp) { nameDisp.textContent = 'Belum ada file dipilih'; nameDisp.classList.remove('has-file'); }
-      } else {
-        showErr('err-proposal-file', false);
-        setInputErr('proposal-file', false);
-        const kb = (file.size / 1024).toFixed(0);
-        if (helper) {
-          const displayName = file.name.length > 32 ? file.name.slice(0, 29) + '…' : file.name;
-          helper.textContent = '✓ ' + displayName + ' (' + kb + ' KB)';
-          helper.style.color = 'var(--accent, #00d4ff)';
-        }
-      }
-    });
-  }
-
   // Inisialisasi semua real-time input setup
   function initInputSetup() {
-    // Ketua dan Wakil: semua field
-    for (let i = 1; i <= 2; i++) {
-      setupNamaInput(`m${i}-nama`);
-      setupEmailInput(`m${i}-email`);
-      setupHPInput(`m${i}-hp`);
-      setupIGInput(`m${i}-ig`);
-    }
-    // Anggota 3-4: hanya nama (tidak ada IG)
+    // Ketua: nama, email, HP, twibbon
+    setupNamaInput('m1-nama');
+    setupEmailInput('m1-email');
+    setupHPInput('m1-hp');
+    setupTwibbonInput('m1-twibbon');
+    // Wakil: nama, email, HP (tanpa twibbon)
+    setupNamaInput('m2-nama');
+    setupEmailInput('m2-email');
+    setupHPInput('m2-hp');
+    // Anggota 3-4: hanya nama
     for (let i = 3; i <= 4; i++) {
       setupNamaInput(`m${i}-nama`);
     }
-    setupProposalInput();
-    setupLinkIGInput();
-  }
-
-  // Setup validasi real-time link IG
-  function setupLinkIGInput() {
-    const el = document.getElementById('link-ig-post');
-    if (!el) return;
-    el.addEventListener('blur', () => {
-      const val = el.value.trim();
-      if (val.length > 0) {
-        const valid = isValidLinkIG(val);
-        showErr('err-link-ig', !valid, valid ? '' : 'Link tidak valid. Contoh: https://www.instagram.com/username');
-        setInputErr('link-ig-post', !valid);
-        setInputOk('link-ig-post', valid);
-      }
-    });
   }
 
   // ============================================================
@@ -373,17 +415,18 @@
     const kat = document.querySelector('input[name="kategori"]:checked')?.value;
     const isInternal = kat === 'internal';
 
-    // --- Anggota 1 (Ketua) & 2 (Wakil): wajib semua field ---
-    [1, 2].forEach(i => {
-      const namId = `m${i}-nama`;
-      const emId  = `m${i}-email`;
-      const hpId  = `m${i}-hp`;
-      const igId  = `m${i}-ig`;
+    // --- Anggota 1 (Ketua): nama, email, HP, twibbon link ---
+    {
+      const i = 1;
+      const namId     = 'm1-nama';
+      const emId      = 'm1-email';
+      const hpId      = 'm1-hp';
+      const twibbonId = 'm1-twibbon';
 
-      const namVal = document.getElementById(namId)?.value.trim() || '';
-      const emVal  = document.getElementById(emId)?.value.trim()  || '';
-      const hpVal  = document.getElementById(hpId)?.value.trim()  || '';
-      const igVal  = document.getElementById(igId)?.value.trim()  || '';
+      const namVal     = document.getElementById(namId)?.value.trim() || '';
+      const emVal      = document.getElementById(emId)?.value.trim()  || '';
+      const hpVal      = document.getElementById(hpId)?.value.trim()  || '';
+      const twibbonVal = document.getElementById(twibbonId)?.value.trim() || '';
 
       const badNam = !isValidNama(namVal);
       setInputErr(namId, badNam); setInputOk(namId, !badNam);
@@ -400,16 +443,10 @@
       showErr(`err-${hpId}`, badHp, badHp ? ERR_MSG.hp : '');
       if (badHp) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(hpId); }
 
-      let igFinal = igVal;
-      if (igFinal.length > 0 && !igFinal.startsWith('@')) {
-        igFinal = '@' + igFinal;
-        const igEl = document.getElementById(igId);
-        if (igEl) igEl.value = igFinal;
-      }
-      const badIg = !isValidIG(igFinal);
-      setInputErr(igId, badIg); setInputOk(igId, !badIg);
-      showErr(`err-${igId}`, badIg, badIg ? ERR_MSG.ig : '');
-      if (badIg) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(igId); }
+      const badTwibbon = !isValidTwibbonLink(twibbonVal);
+      setInputErr(twibbonId, badTwibbon); setInputOk(twibbonId, !badTwibbon);
+      showErr(`err-${twibbonId}`, badTwibbon, badTwibbon ? ERR_MSG.twibbon : '');
+      if (badTwibbon) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(twibbonId); }
 
       // Jurusan — wajib jika internal
       if (isInternal) {
@@ -420,7 +457,44 @@
         showErr(`err-${jurId}`, badJur, badJur ? 'Jurusan wajib diisi (min. 3 karakter).' : '');
         if (badJur) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(jurId); }
       }
-    });
+    }
+
+    // --- Anggota 2 (Wakil): nama, email, HP (tanpa twibbon) ---
+    {
+      const i = 2;
+      const namId = 'm2-nama';
+      const emId  = 'm2-email';
+      const hpId  = 'm2-hp';
+
+      const namVal = document.getElementById(namId)?.value.trim() || '';
+      const emVal  = document.getElementById(emId)?.value.trim()  || '';
+      const hpVal  = document.getElementById(hpId)?.value.trim()  || '';
+
+      const badNam = !isValidNama(namVal);
+      setInputErr(namId, badNam); setInputOk(namId, !badNam);
+      showErr(`err-${namId}`, badNam, badNam ? ERR_MSG.nama : '');
+      if (badNam) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(namId); }
+
+      const badEm = !isValidEmail(emVal);
+      setInputErr(emId, badEm); setInputOk(emId, !badEm);
+      showErr(`err-${emId}`, badEm, badEm ? ERR_MSG.email : '');
+      if (badEm) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(emId); }
+
+      const badHp = !isValidHP(hpVal);
+      setInputErr(hpId, badHp); setInputOk(hpId, !badHp);
+      showErr(`err-${hpId}`, badHp, badHp ? ERR_MSG.hp : '');
+      if (badHp) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(hpId); }
+
+      // Jurusan — wajib jika internal
+      if (isInternal) {
+        const jurId  = `m${i}-jurusan`;
+        const jurVal = document.getElementById(jurId)?.value.trim() || '';
+        const badJur = jurVal.length < 3;
+        setInputErr(jurId, badJur); setInputOk(jurId, !badJur);
+        showErr(`err-${jurId}`, badJur, badJur ? 'Jurusan wajib diisi (min. 3 karakter).' : '');
+        if (badJur) { ok = false; if (!firstErrEl) firstErrEl = document.getElementById(jurId); }
+      }
+    }
 
     // --- Anggota 3: wajib nama saja ---
     {
@@ -492,40 +566,8 @@
       }
     }));
 
-    // ---- Cek duplikat Instagram (Ketua & Wakil saja, karena hanya mereka punya IG) ----
-    const igVals = [1, 2].map(i => ({ id: i, val: document.getElementById(`m${i}-ig`)?.value.trim().toLowerCase() || '' })).filter(g => g.val);
-    igVals.forEach((a, i) => igVals.forEach((b, j) => {
-      if (i !== j && a.val === b.val) {
-        const id = `m${a.id}-ig`;
-        setInputErr(id, true); setInputOk(id, false);
-        showErr(`err-${id}`, true, `Akun Instagram sama dengan Anggota ${b.id}. Pakai akun berbeda.`);
-        ok = false; if (!firstDupEl) firstDupEl = document.getElementById(id);
-      }
-    }));
-
     const scrollTarget = firstDupEl || firstErrEl;
     if (scrollTarget) { scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); scrollTarget.focus(); }
-
-    return ok;
-  }
-
-  function validateStep3() {
-    let ok = true;
-
-    const fileInput = document.getElementById('proposal-file');
-    const file      = fileInput?.files[0];
-    const fileCheck = isValidProposal(file);
-    setInputErr('proposal-file', !fileCheck.ok);
-    showErr('err-proposal-file', !fileCheck.ok, fileCheck.msg || '');
-    if (!fileCheck.ok) ok = false;
-
-    // Link IG
-    const linkIG = (document.getElementById('link-ig-post')?.value || '').trim();
-    const badLinkIG = !isValidLinkIG(linkIG);
-    setInputErr('link-ig-post', badLinkIG);
-    setInputOk('link-ig-post', !badLinkIG);
-    showErr('err-link-ig', badLinkIG, badLinkIG ? 'Link profil Instagram wajib diisi. Contoh: https://www.instagram.com/username' : '');
-    if (badLinkIG) ok = false;
 
     return ok;
   }
@@ -606,7 +648,6 @@
     });
     document.getElementById('conn-1-2').classList.toggle('done', currentStep > 1);
     document.getElementById('conn-2-3').classList.toggle('done', currentStep > 2);
-    document.getElementById('conn-3-4').classList.toggle('done', currentStep > 3);
 
     btnBack.style.display = currentStep > 1 ? 'inline-flex' : 'none';
     const isLast = currentStep === TOTAL_STEPS;
@@ -624,7 +665,6 @@
     let valid = false;
     if (currentStep === 1) valid = validateStep1();
     else if (currentStep === 2) valid = validateStep2();
-    else if (currentStep === 3) valid = validateStep3();
     if (!valid) return;
 
     // ── QUOTA RE-CHECK saat mau lanjut dari step 1 ─────────────
@@ -640,7 +680,7 @@
       btnNext.textContent = origText;
 
       if (!quotaCheck.ok) {
-        alert('⚠️ Pendaftaran ditutup.\n\n' + quotaCheck.reason + '\n\nSilakan hubungi panitia untuk informasi lebih lanjut.');
+        showNotif({ type: 'warning', title: 'Pendaftaran Ditutup', message: quotaCheck.reason + '\n\nSilakan hubungi panitia untuk informasi lebih lanjut.' });
         return;
       }
     }
@@ -698,7 +738,7 @@
       const block = document.createElement('div');
       block.className = 'confirm-member-block';
 
-      const isLeader = i <= 2;
+      const isLeader = i === 1;
       let html = `
         <div class="confirm-member-title">${labels[i-1]}</div>
         <div class="confirm-row"><span class="confirm-key">Nama</span><span class="confirm-val">${nama}</span></div>
@@ -707,7 +747,12 @@
         html += `
         <div class="confirm-row"><span class="confirm-key">Email</span><span class="confirm-val">${get(`m${i}-email`)}</span></div>
         <div class="confirm-row"><span class="confirm-key">No. HP</span><span class="confirm-val">${get(`m${i}-hp`)}</span></div>
-        <div class="confirm-row"><span class="confirm-key">Instagram</span><span class="confirm-val">${get(`m${i}-ig`)}</span></div>
+        <div class="confirm-row"><span class="confirm-key">Link Twibbon</span><span class="confirm-val">${get('m1-twibbon')}</span></div>
+        `;
+      } else if (i === 2) {
+        html += `
+        <div class="confirm-row"><span class="confirm-key">Email</span><span class="confirm-val">${get(`m${i}-email`)}</span></div>
+        <div class="confirm-row"><span class="confirm-key">No. HP</span><span class="confirm-val">${get(`m${i}-hp`)}</span></div>
         `;
       }
       if (isInternal) {
@@ -717,11 +762,7 @@
       cfMembers.appendChild(block);
     }
 
-    // File & Link IG
-    const fileInput = document.getElementById('proposal-file');
-    const file = fileInput?.files[0];
-    document.getElementById('cf-file').textContent = file ? file.name : '—';
-    document.getElementById('cf-link-ig').textContent = get('link-ig-post') || '—';
+    // Bukti bayar
     const buktiFile = document.getElementById('bukti-bayar')?.files[0];
     document.getElementById('cf-bukti-bayar').textContent = buktiFile ? buktiFile.name : '—';
 
@@ -760,11 +801,7 @@
       confirmSend.disabled = false;
       confirmSend.textContent = 'Kirim Sekarang ✓';
       closeConfirmModal();
-      alert('⚠️ Pendaftaran ditutup.')
-
-' + quotaCheck.reason + '
-
-('Silakan hubungi panitia untuk informasi lebih lanjut.');
+      showNotif({ type: 'warning', title: 'Pendaftaran Ditutup', message: quotaCheck.reason + '\n\nSilakan hubungi panitia untuk informasi lebih lanjut.' });
       return;
     }
     // ────────────────────────────────────────────────────────────
@@ -789,30 +826,16 @@
         namaTim        : get('nama-tim'),
         institusi      : kat === 'internal' ? 'Internal KKG' : get('asal-institusi'),
         a1_nama    : get('m1-nama'),  a1_email   : get('m1-email'),
-        a1_hp      : get('m1-hp'),    a1_ig      : get('m1-ig'),
+        a1_hp      : get('m1-hp'),    a1_twibbon : get('m1-twibbon'),
         a1_jurusan : kat === 'internal' ? get('m1-jurusan') : '',
         a2_nama    : get('m2-nama'),  a2_email   : get('m2-email'),
-        a2_hp      : get('m2-hp'),    a2_ig      : get('m2-ig'),
+        a2_hp      : get('m2-hp'),
         a2_jurusan : kat === 'internal' ? get('m2-jurusan') : '',
         a3_nama    : get('m3-nama'),
         a3_jurusan : kat === 'internal' ? get('m3-jurusan') : '',
         a4_nama    : get('m4-nama'),
         a4_jurusan : kat === 'internal' ? get('m4-jurusan') : '',
-        linkIGPost : get('link-ig-post'),
       };
-
-      // Proposal ke base64
-      const fileInput = document.getElementById('proposal-file');
-      const file = fileInput?.files[0];
-      if (file) {
-        const base64 = await new Promise((res, rej) => {
-          const reader = new FileReader();
-          reader.onload  = () => res(reader.result.split(',')[1]);
-          reader.onerror = () => rej(new Error('Gagal membaca file'));
-          reader.readAsDataURL(file);
-        });
-        formData.buktiBayar = { base64, mimeType: file.type, fileName: file.name };
-      }
 
       // Bukti transfer ke base64
       const buktiInput = document.getElementById('bukti-bayar');
@@ -868,14 +891,12 @@
             // Timeout bukan berarti gagal — Apps Script mungkin masih proses
             // dan data sudah masuk ke spreadsheet. Tampilkan pesan khusus
             // dengan kode registrasi supaya user bisa konfirmasi ke panitia.
-            alert(
-              '⏱️ Koneksi lambat — respon server melebihi batas waktu.\n\n' +
-              'Data kamu kemungkinan SUDAH MASUK ke sistem.\n\n' +
-              'Catat kode registrasi berikut:\n' +
-              '👉 ' + kode + '\n\n' +
-              'Hubungi panitia dengan kode tersebut untuk konfirmasi. ' +
-              'Jangan submit ulang sebelum konfirmasi.'
-            );
+            showNotif({
+              type   : 'timeout',
+              title  : 'Koneksi Lambat',
+              message: 'Respon server melebihi batas waktu. Data kamu kemungkinan sudah masuk ke sistem. Hubungi panitia dengan kode di bawah untuk konfirmasi — jangan submit ulang sebelum dikonfirmasi.',
+              code   : kode,
+            });
             // Anggap berhasil — tampilkan success screen dengan kode yang sama
             berhasil = true;
           } else {
@@ -884,7 +905,7 @@
         }
 
         if (!berhasil) {
-          alert('❌ Pendaftaran gagal.\n\n' + pesanError + '\n\nSilakan coba lagi atau hubungi panitia.');
+          showNotif({ type: 'error', title: 'Pendaftaran Gagal', message: pesanError + '\n\nSilakan coba lagi atau hubungi panitia.' });
           btnSubmit.classList.remove('loading');
           btnSubmit.disabled = false;
           btnBack.disabled   = false;
@@ -914,7 +935,7 @@
 
     } catch (err) {
       console.error('Gagal kirim:', err);
-      alert('Gagal mengirim pendaftaran. Pastikan koneksi aktif dan coba lagi.\n\nDetail: ' + err.message);
+      showNotif({ type: 'error', title: 'Gagal Mengirim', message: 'Pastikan koneksi internet aktif dan coba lagi.\n\nDetail: ' + err.message });
       btnSubmit.classList.remove('loading');
       btnSubmit.disabled = false;
       btnBack.disabled   = false;
@@ -948,10 +969,6 @@
       i.classList.remove('error', 'valid');
     });
     document.getElementById('agree-wrap').style.borderColor = '';
-    const helper = document.querySelector('#proposal-file ~ .form-helper, #proposal-file + .form-helper');
-    if (helper) { helper.textContent = 'Format: PDF · Maks. 10MB · Gunakan template proposal resmi IGITA 2026.'; helper.style.color = ''; }
-    const proposalName = document.getElementById('proposal-file-name');
-    if (proposalName) proposalName.textContent = 'Belum ada file dipilih';
     // Hide jurusan rows on reset
     document.querySelectorAll('.jurusan-row').forEach(r => r.style.display = 'none');
     btnSubmit.classList.remove('loading');
@@ -1089,7 +1106,7 @@
       const total = internal + external;
       updateQuotaDisplay(internal, external);
       if (total >= TOTAL_QUOTA_MAX) {
-        return { ok: false, reason: 'Kuota pendaftaran sudah penuh (' + total + '/' + TOTAL_QUOTA_MAX + ' tim).' };
+        return { ok: false, reason: 'Kuota pendaftaran sudah penuh' };
       }
       return { ok: true };
     } catch (err) {
@@ -1108,11 +1125,10 @@
 
   const DRAFT_TEXT_FIELDS = [
     'nama-tim', 'asal-institusi',
-    'm1-nama', 'm1-email', 'm1-hp', 'm1-ig', 'm1-jurusan',
-    'm2-nama', 'm2-email', 'm2-hp', 'm2-ig', 'm2-jurusan',
+    'm1-nama', 'm1-email', 'm1-hp', 'm1-twibbon', 'm1-jurusan',
+    'm2-nama', 'm2-email', 'm2-hp', 'm2-jurusan',
     'm3-nama', 'm3-jurusan',
     'm4-nama', 'm4-jurusan',
-    'link-ig-post',
   ];
 
   /** Simpan semua field + step ke localStorage */
@@ -1256,7 +1272,4 @@
   checkQuota();        // cek kuota saat halaman dimuat
   initDraftAutoSave(); // pasang auto-save listener ke semua field
   initDraftRestore();  // cek & tampilkan banner jika ada draft tersimpan
-
-  // File upload nama file display
-  // proposal file name display handled by setupProposalInput
 })();
