@@ -282,63 +282,156 @@
       from { opacity: 0.4; }
       to   { opacity: 0.85; }
     }
-    /* ── QRIS Payment Step ── */
+    /* ── QRIS Payment Step — Premium ── */
     .qris-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      background: linear-gradient(160deg, rgba(0,18,45,0.85) 0%, rgba(0,8,22,0.95) 100%);
+      border: 1px solid rgba(0,212,255,0.18);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 0 48px rgba(0,212,255,0.07),
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset 0 0 60px rgba(0,136,255,0.03);
+    }
+    .qris-top-bar {
+      height: 2px;
+      width: 100%;
+      background: linear-gradient(90deg, #00d4ff 0%, #0088ff 55%, transparent 100%);
+    }
+    .qris-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.022) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+    }
+    .qris-inner {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
-      padding: 24px 20px;
-      background: rgba(0,212,255,0.025);
-      border: 1px solid rgba(0,212,255,0.12);
-      border-radius: 12px;
-      margin-bottom: 24px;
+      padding: 22px 24px 24px;
+      gap: 0;
     }
-    .qris-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
+    .qris-header {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+    }
+    .qris-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 20px;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.22);
       font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      color: #00d4ff;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .qris-amount-block {
+      text-align: right;
+    }
+    .qris-amount-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.52rem;
+      letter-spacing: 0.14em;
+      color: rgba(107,127,168,0.7);
+      text-transform: uppercase;
+      margin-bottom: 3px;
     }
     .qris-amount {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.7rem;
+      font-size: 1.45rem;
       font-weight: 700;
       color: #00d4ff;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
       line-height: 1;
+      text-shadow: 0 0 20px rgba(0,212,255,0.4);
     }
     .qris-amount span {
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       color: var(--muted);
       font-weight: 400;
-      margin-left: 4px;
+      margin-left: 3px;
     }
-    .qris-wrap {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 30px rgba(0,212,255,0.08);
+    /* QR frame */
+    .qris-qr-wrap {
+      position: relative;
+      width: fit-content;
+      margin: 12px 0;
+      overflow: visible;
     }
+    /* corner brackets */
+    .qr-corner {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-color: #00d4ff;
+      border-style: solid;
+      filter: drop-shadow(0 0 6px rgba(0,212,255,1));
+      z-index: 2;
+    }
+    .qr-corner.tl { top: -8px; left: -8px; border-width: 2.5px 0 0 2.5px; border-radius: 4px 0 0 0; }
+    .qr-corner.tr { top: -8px; right: -8px; border-width: 2.5px 2.5px 0 0; border-radius: 0 4px 0 0; }
+    .qr-corner.bl { bottom: -8px; left: -8px; border-width: 0 0 2.5px 2.5px; border-radius: 0 0 0 4px; }
+    .qr-corner.br { bottom: -8px; right: -8px; border-width: 0 2.5px 2.5px 0; border-radius: 0 0 4px 0; }
     .qris-img {
-      width: 210px;
-      height: 210px;
+      width: 200px;
+      height: 200px;
       object-fit: contain;
       display: block;
+      border-radius: 6px;
+      box-shadow: 0 0 28px rgba(0,212,255,0.12), 0 8px 32px rgba(0,0,0,0.45);
+    }
+    /* footer */
+    .qris-footer {
+      width: 100%;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,212,255,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
     .qris-hint {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-align: center;
+      font-size: 0.65rem;
+      color: rgba(107,127,168,0.75);
       font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
+    }
+    .qris-methods {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .qris-pill {
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: rgba(0,136,255,0.06);
+      border: 1px solid rgba(0,136,255,0.14);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.07em;
+      color: rgba(107,127,168,0.8);
     }
 
     /* ─────────────────────────────────────────────────────────
@@ -825,14 +918,44 @@
           </div>
 
           <div class="qris-container">
-            <div class="qris-label">Biaya Pendaftaran Tim</div>
-            <div class="qris-amount">Rp 100.000<span>/ Tim</span></div>
-            <div class="qris-wrap">
-              <img src="asset/QRIS Sementara.jpeg" alt="QRIS IGITA 2026" class="qris-img">
-            </div>
-            <div class="qris-hint">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-              Scan menggunakan e-wallet atau mobile banking apapun
+            <div class="qris-top-bar"></div>
+            <div class="qris-bg-grid"></div>
+            <div class="qris-inner">
+
+              <div class="qris-header">
+                <div class="qris-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 7h.01M12 7h5M7 12h.01M12 12h3M7 17h.01M12 17h2"/></svg>
+                  QRIS · Pembayaran
+                </div>
+                <div class="qris-amount-block">
+                  <div class="qris-amount-label">// Biaya Tim</div>
+                  <div class="qris-amount">Rp 100.000<span>/ Tim</span></div>
+                </div>
+              </div>
+
+              <div class="qris-qr-wrap">
+                <div class="qr-corner tl"></div>
+                <div class="qr-corner tr"></div>
+                <div class="qr-corner bl"></div>
+                <div class="qr-corner br"></div>
+                <img src="asset/QRIS EXAMPLE.jpeg" alt="QRIS IGITA 2026" class="qris-img">
+              </div>
+
+              <div class="qris-footer">
+                <div class="qris-hint">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                  Scan menggunakan e-wallet atau mobile banking apapun
+                </div>
+                <div class="qris-methods">
+                  <span class="qris-pill">GoPay</span>
+                  <span class="qris-pill">OVO</span>
+                  <span class="qris-pill">DANA</span>
+                  <span class="qris-pill">ShopeePay</span>
+                  <span class="qris-pill">LinkAja</span>
+                  <span class="qris-pill">M-Banking</span>
+                </div>
+              </div>
+
             </div>
           </div>
 

@@ -121,21 +121,45 @@
 
     /* Navbar CTA */
     a.nav-cta.reg-closed-btn {
-      background: rgba(239,68,68,0.08) !important;
-      border-color: rgba(239,68,68,0.3) !important;
       color: #f87171 !important;
+      box-shadow:
+        inset 0 0 0 1.5px rgba(239,68,68,0.4),
+        0 0 12px rgba(239,68,68,0.07) !important;
+      background: rgba(239,68,68,0.05) !important;
+      cursor: pointer;
     }
+    a.nav-cta.reg-closed-btn::before { display: none !important; }
+    a.nav-cta.reg-closed-btn::after  { display: none !important; }
     a.nav-cta.reg-closed-btn:hover {
-      background: rgba(239,68,68,0.14) !important;
-      box-shadow: 0 0 16px rgba(239,68,68,0.15) !important;
-      transform: none;
+      color: #fca5a5 !important;
+      box-shadow:
+        inset 0 0 0 1.5px rgba(239,68,68,0.6),
+        0 0 22px rgba(239,68,68,0.14) !important;
+      background: rgba(239,68,68,0.09) !important;
+      transform: none !important;
     }
 
     /* Mobile CTA */
-    a.mobile-cta.reg-closed-btn {
-      background: rgba(239,68,68,0.08) !important;
-      border-color: rgba(239,68,68,0.3) !important;
+    a.mobile-cta.reg-closed-btn,
+    .mobile-nav .mobile-cta.reg-closed-btn {
       color: #f87171 !important;
+      box-shadow:
+        inset 0 0 0 1.5px rgba(239,68,68,0.4),
+        0 0 12px rgba(239,68,68,0.07) !important;
+      background: rgba(239,68,68,0.05) !important;
+    }
+    a.mobile-cta.reg-closed-btn::before,
+    .mobile-nav .mobile-cta.reg-closed-btn::before { display: none !important; }
+    a.mobile-cta.reg-closed-btn::after,
+    .mobile-nav .mobile-cta.reg-closed-btn::after  { display: none !important; }
+    a.mobile-cta.reg-closed-btn:hover,
+    .mobile-nav .mobile-cta.reg-closed-btn:hover {
+      color: #fca5a5 !important;
+      box-shadow:
+        inset 0 0 0 1.5px rgba(239,68,68,0.6),
+        0 0 22px rgba(239,68,68,0.14) !important;
+      background: rgba(239,68,68,0.09) !important;
+      transform: none !important;
     }
 
     /* Hero / CTA section primary button */
@@ -150,24 +174,59 @@
     a.btn-primary.reg-closed-btn::before,
     a.btn-primary.reg-closed-btn::after { display: none !important; }
 
-    /* Category card wrapper */
+    /* ── Category card — Closed State (premium) ── */
     a.reg-closed-btn .cat-card {
       position: relative;
-      opacity: 0.65;
-      transition: opacity 0.2s ease;
+      opacity: 0.52;
+      filter: saturate(0.4) brightness(0.82);
+      transition:
+        opacity    0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        filter     0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        transform  0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
     }
-    a.reg-closed-btn:hover .cat-card { opacity: 0.8; }
+
+    /* Red accent bar replaces the normal blue/purple top strip */
+    a.reg-closed-btn .cat-card::before {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(239,68,68,0.5) 28%,
+        rgba(239,68,68,0.78) 52%,
+        rgba(239,68,68,0.45) 76%,
+        transparent 100%
+      ) !important;
+      opacity: 0.55;
+      transition: opacity 0.35s ease;
+    }
+
+    /* Hover — illuminate, no lift, red border glow */
+    a.reg-closed-btn:hover .cat-card {
+      opacity: 0.78;
+      filter: saturate(0.35) brightness(0.75);
+      transform: none !important;
+      box-shadow:
+        0 0 0 1px rgba(239,68,68,0.3),
+        0 0 28px rgba(239,68,68,0.12),
+        inset 0 0 40px rgba(239,68,68,0.05);
+    }
+
+    /* Keep red accent bar visible on hover */
+    a.reg-closed-btn:hover .cat-card::before {
+      opacity: 0.7;
+    }
+
+    /* Suppress the normal glow-orb ::after — reset to nothing */
     a.reg-closed-btn .cat-card::after {
-      content: '// Pendaftaran Ditutup';
-      position: absolute; inset: 0; border-radius: 14px;
-      background: rgba(2,6,14,0.78);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
-      color: #ef4444; opacity: 0; transition: opacity 0.22s ease;
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: transparent;
       pointer-events: none;
+      z-index: 5;
     }
-    a.reg-closed-btn:hover .cat-card::after { opacity: 1; }
   </style>
 </head>
 <body>
